@@ -110,12 +110,16 @@ class CutDiagramSvgGenerator
                 );
 
                 if ($w > 40 && $h > 20) {
+                    $remnantLabel = htmlspecialchars(
+                        $remnant['label'] ?? ('Remanente '.number_format($remnant['width'], 1).'×'.number_format($remnant['height'], 1)),
+                        ENT_QUOTES,
+                    );
+
                     $elements[] = sprintf(
-                        '<text x="%d" y="%d" font-size="10" text-anchor="middle" fill="#6b7280">Remanente %s×%s</text>',
+                        '<text x="%d" y="%d" font-size="10" text-anchor="middle" fill="#6b7280">%s</text>',
                         (int) ($x + ($w / 2)),
                         (int) ($y + ($h / 2)),
-                        number_format($remnant['width'], 1),
-                        number_format($remnant['height'], 1),
+                        $remnantLabel,
                     );
                 }
             }

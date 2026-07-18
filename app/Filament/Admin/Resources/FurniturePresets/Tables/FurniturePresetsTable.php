@@ -23,15 +23,18 @@ class FurniturePresetsTable
                     ->label('Tipo')
                     ->badge()
                     ->sortable(),
-                TextColumn::make('opening_height_m')
-                    ->label('Alto (m)')
+                TextColumn::make('global_height_cm')
+                    ->label('Alto global')
+                    ->suffix(' cm')
                     ->sortable(),
-                TextColumn::make('opening_width_m')
-                    ->label('Ancho (m)')
+                TextColumn::make('global_width_cm')
+                    ->label('Ancho global')
+                    ->suffix(' cm')
                     ->sortable(),
-                TextColumn::make('opening_depth_cm')
-                    ->label('Profundidad (cm)')
-                    ->sortable(),
+                TextColumn::make('calculated_boards_count')
+                    ->label('Tableros')
+                    ->sortable()
+                    ->placeholder('—'),
                 IconColumn::make('is_active')
                     ->label('Activo')
                     ->boolean(),

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\FurnitureCabinetType;
 use App\Enums\PlacementType;
+use App\Services\Carpentry\PresetCutCalculator;
+use App\Support\BoardMaterialOptions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,6 +23,10 @@ class FurniturePreset extends Model
 
     public const DEFAULT_SHELF_DEPTH_OFFSET_CM = 0.5;
 
+    public const DEFAULT_BOARD_WIDTH_CM = 122.0;
+
+    public const DEFAULT_BOARD_HEIGHT_CM = 244.0;
+
     protected $fillable = [
         'name',
         'slug',
@@ -28,9 +34,21 @@ class FurniturePreset extends Model
         'opening_height_m',
         'opening_width_m',
         'opening_depth_cm',
+        'global_height_cm',
+        'global_width_cm',
+        'global_depth_cm',
         'furniture_type',
         'side_type',
         'configuration',
+        'board_width_cm',
+        'board_height_cm',
+        'selected_boards',
+        'back_board_thickness_mm',
+        'back_board_quantity',
+        'calculated_boards_count',
+        'pieces',
+        'cut_plan',
+        'svg_diagram',
         'default_shelf_count',
         'default_shelf_thickness_cm',
         'is_active',
@@ -42,9 +60,20 @@ class FurniturePreset extends Model
             'opening_height_m' => 'decimal:2',
             'opening_width_m' => 'decimal:2',
             'opening_depth_cm' => 'decimal:2',
+            'global_height_cm' => 'decimal:2',
+            'global_width_cm' => 'decimal:2',
+            'global_depth_cm' => 'decimal:2',
             'furniture_type' => FurnitureCabinetType::class,
             'side_type' => PlacementType::class,
             'configuration' => 'array',
+            'board_width_cm' => 'decimal:2',
+            'board_height_cm' => 'decimal:2',
+            'selected_boards' => 'array',
+            'back_board_thickness_mm' => 'integer',
+            'back_board_quantity' => 'integer',
+            'calculated_boards_count' => 'integer',
+            'pieces' => 'array',
+            'cut_plan' => 'array',
             'default_shelf_count' => 'integer',
             'default_shelf_thickness_cm' => 'decimal:2',
             'is_active' => 'boolean',
@@ -81,6 +110,11 @@ class FurniturePreset extends Model
             'hanging_bar_measure_m' => null,
             'rear_discount_cm' => self::DEFAULT_DISCOUNT_CM,
             'trunk_shelf_discount_cm' => self::DEFAULT_DISCOUNT_CM,
+            'trunk_shelf_length_cm' => null,
+            'trunk_shelf_depth_cm' => null,
+            'trunk_shelf_board_mm' => 16,
+            'costado_visto_izquierda' => false,
+            'costado_visto_derecha' => false,
             'lateral_interior_depths_cm' => [],
         ];
     }
@@ -110,14 +144,30 @@ class FurniturePreset extends Model
 
         $data['configuration'] = $configuration;
         $data['default_shelf_count'] = (int) ($configuration['shelf_count'] ?? 2);
+        $data['board_width_cm'] = (float) ($data['board_width_cm'] ?? self::DEFAULT_BOARD_WIDTH_CM);
+        $data['board_height_cm'] = (float) ($data['board_height_cm'] ?? self::DEFAULT_BOARD_HEIGHT_CM);
+        $data['selected_boards'] = $data['selected_boards'] ?? BoardMaterialOptions::defaultSelected();
+        $data['back_board_thickness_mm'] = (int) ($data['back_board_thickness_mm'] ?? 10);
+        $data['back_board_quantity'] = (int) ($data['back_board_quantity'] ?? 1);
+        $data['default_shelf_thickness_cm'] = BoardMaterialOptions::primaryThicknessCm($data['selected_boards']);
+
+        $calculation = app(PresetCutCalculator::class)->calculate($data);
+        $data['pieces'] = $calculation['pieces'];
+        $data['cut_plan'] = $calculation['cut_plan'];
+        $data['svg_diagram'] = $calculation['svg_diagram'];
+        $data['calculated_boards_count'] = $calculation['calculated_boards_count'];
 
         if (empty($data['name']) && $furnitureType) {
+            $globalHeight = (float) ($data['global_height_cm'] ?? (((float) ($data['opening_height_m'] ?? 0)) * 100));
+            $globalWidth = (float) ($data['global_width_cm'] ?? (((float) ($data['opening_width_m'] ?? 0)) * 100));
+            $globalDepth = (float) ($data['global_depth_cm'] ?? $openingDepthCm);
+
             $data['name'] = sprintf(
-                '%s — %s×%sm × %scm',
+                '%s — %s×%s×%s cm',
                 $furnitureType->getLabel(),
-                number_format((float) ($data['opening_height_m'] ?? 0), 2, ',', ''),
-                number_format((float) ($data['opening_width_m'] ?? 0), 2, ',', ''),
-                number_format($openingDepthCm, 0, ',', ''),
+                number_format($globalHeight, 0, ',', ''),
+                number_format($globalWidth, 0, ',', ''),
+                number_format($globalDepth, 0, ',', ''),
             );
         }
 
@@ -146,6 +196,23 @@ class FurniturePreset extends Model
         $data['side_type'] ??= PlacementType::EntreParedes->value;
         $data['_side_paredes'] = ($data['side_type'] ?? '') === PlacementType::EntreParedes->value;
         $data['_side_costado_visto'] = ($data['side_type'] ?? '') === PlacementType::CostadoVisto->value;
+        $data['board_width_cm'] ??= self::DEFAULT_BOARD_WIDTH_CM;
+        $data['board_height_cm'] ??= self::DEFAULT_BOARD_HEIGHT_CM;
+        $data['selected_boards'] ??= BoardMaterialOptions::defaultSelected();
+        $data['back_board_thickness_mm'] ??= 10;
+        $data['back_board_quantity'] ??= 1;
+
+        if (empty($data['global_height_cm']) && ! empty($data['opening_height_m'])) {
+            $data['global_height_cm'] = round((float) $data['opening_height_m'] * 100, 2);
+        }
+
+        if (empty($data['global_width_cm']) && ! empty($data['opening_width_m'])) {
+            $data['global_width_cm'] = round((float) $data['opening_width_m'] * 100, 2);
+        }
+
+        if (empty($data['global_depth_cm']) && ! empty($data['opening_depth_cm'])) {
+            $data['global_depth_cm'] = (float) $data['opening_depth_cm'];
+        }
 
         return $data;
     }
