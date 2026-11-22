@@ -270,7 +270,9 @@ class FurniturePreset extends Model
         $configuration = self::normalizeHangingBarLengthCm($configuration);
 
         $data['configuration'] = $configuration;
-        $data['furniture_type'] ??= null;
+        $furnitureType = FurnitureTypeCatalog::normalizeSlug($data['furniture_type'] ?? null);
+        // El CheckboxList necesita una lista; en la base el tipo es un solo texto.
+        $data['furniture_type'] = filled($furnitureType) ? [$furnitureType] : [];
         $data['side_type'] ??= PlacementType::EntreParedes->value;
         $data['_side_paredes'] = ($data['side_type'] ?? '') === PlacementType::EntreParedes->value;
         $data['_side_costado_visto'] = ($data['side_type'] ?? '') === PlacementType::CostadoVisto->value;
