@@ -201,6 +201,28 @@ class PresetCutSheetPdfGenerator
     }
 
     /**
+     * @param  list<array<string, mixed>>  $structureDiagrams
+     * @param  list<array<string, mixed>>  $backDiagrams
+     * @return list<list<array<string, mixed>>>
+     */
+    private function cutDiagramPages(array $structureDiagrams, array $backDiagrams, int $structureThickness, int $backThickness): array
+    {
+        $diagrams = [];
+
+        foreach ($structureDiagrams as $diagram) {
+            $diagram['thickness_mm'] = $structureThickness;
+            $diagrams[] = $diagram;
+        }
+
+        foreach ($backDiagrams as $diagram) {
+            $diagram['thickness_mm'] = $backThickness;
+            $diagrams[] = $diagram;
+        }
+
+        return array_chunk($diagrams, 2);
+    }
+
+    /**
      * @param  array<string, mixed>  $formData
      * @param  array<string, mixed>  $configuration
      * @param  list<array<string, mixed>>  $pieces
@@ -435,6 +457,8 @@ class PresetCutSheetPdfGenerator
         foreach ($pieces as $piece) {
             $qty = max(1, (int) ($piece['quantity'] ?? 1));
             $label = (string) ($piece['label'] ?? 'Pieza');
+            $thicknessMm = $this->pieceThicknessMm($piece, $label, $structureThickness, $backThickness);
+
             for ($i = 1; $i <= $qty; $i++) {
                 $suffix = $qty > 1 ? " #{$i}" : '';
                 $namedPieces[] = [
@@ -443,6 +467,7 @@ class PresetCutSheetPdfGenerator
                     'code' => 'P'.str_pad((string) $pieceIndex, 2, '0', STR_PAD_LEFT),
                     'width_cm' => $piece['width_cm'],
                     'height_cm' => $piece['height_cm'],
+                    'thickness_mm' => $thicknessMm,
                     'area_cm2' => round(((float) $piece['width_cm']) * ((float) $piece['height_cm']), 2),
                 ];
                 $pieceIndex++;
@@ -535,6 +560,7 @@ class PresetCutSheetPdfGenerator
             'interiorLaterals' => $interiorLaterals,
             'boardsToUse' => $boardsToUse,
             'namedPieces' => $namedPieces,
+            'pieceSummary' => $this->summarizePieces($namedPieces),
             'namedRemnants' => $namedRemnants,
             'drawers' => $this->buildDrawers($configuration, $formData),
             'hangingBars' => $this->buildHangingBars($configuration),
@@ -543,6 +569,7 @@ class PresetCutSheetPdfGenerator
             'elevation' => $this->elevationDataUri($formData, $configuration, $pieces),
             'structureBoardPages' => array_chunk($structureDiagrams, 1),
             'backBoardPages' => array_chunk($backDiagrams, 1),
+            'cutDiagramPages' => $this->cutDiagramPages($structureDiagrams, $backDiagrams, $structureThickness, $backThickness),
             'totals' => [
                 'main_boards' => (int) ($calculation['calculated_boards_count'] ?? 0),
                 'back_boards' => $backQty,
@@ -735,6 +762,55 @@ class PresetCutSheetPdfGenerator
         }
 
         return false;
+    }
+
+    /**
+     * @param  array<string, mixed>  $piece
+     */
+    private function pieceThicknessMm(array $piece, string $label, int $structureThickness, int $backThickness): int
+    {
+        if (preg_match('/\((\d+)\s*mm\)/u', $label, $matches) === 1) {
+            return (int) $matches[1];
+        }
+
+        $role = (string) ($piece['board_role'] ?? '');
+        if ($role === 'back' || str_contains(mb_strtolower($label), 'fondo')) {
+            return $backThickness;
+        }
+
+        return $structureThickness;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $namedPieces
+     * @return list<array{title: string, quantity: int, width_cm: mixed, height_cm: mixed, thickness_mm: int}>
+     */
+    private function summarizePieces(array $namedPieces): array
+    {
+        $groups = [];
+
+        foreach ($namedPieces as $piece) {
+            $rawName = (string) preg_replace('/\s+#\d+$/u', '', (string) ($piece['name'] ?? 'Pieza'));
+            $title = $this->pieceUsageShort($rawName);
+            $width = $piece['width_cm'] ?? null;
+            $height = $piece['height_cm'] ?? null;
+            $thickness = (int) ($piece['thickness_mm'] ?? 0);
+            $key = $title.'|'.$width.'|'.$height.'|'.$thickness;
+
+            if (! isset($groups[$key])) {
+                $groups[$key] = [
+                    'title' => $title,
+                    'quantity' => 0,
+                    'width_cm' => $width,
+                    'height_cm' => $height,
+                    'thickness_mm' => $thickness,
+                ];
+            }
+
+            $groups[$key]['quantity']++;
+        }
+
+        return array_values($groups);
     }
 
     protected function pieceUsage(string $label): string

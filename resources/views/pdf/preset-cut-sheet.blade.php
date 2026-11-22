@@ -45,6 +45,17 @@
             text-transform: uppercase;
         }
         table.measure-box td { font-size: 9px; font-weight: bold; color: #111827; }
+        table.counts { width: 100%; border-collapse: separate; border-spacing: 5px 0; margin: 2px 0 4px; }
+        table.counts td { width: 33.33%; border: 1px solid #e5e7eb; text-align: center; vertical-align: top; padding: 0; }
+        table.counts .count-title { font-size: 8px; font-weight: bold; padding: 2px 4px; letter-spacing: 0.3px; }
+        table.counts .count-value { font-size: 12px; font-weight: bold; padding: 3px 4px 4px; color: #111827; }
+        table.counts .tone-orange { background: #ffedd5; color: #9a3412; }
+        table.counts .tone-green { background: #dcfce7; color: #166534; }
+        table.counts .tone-blue { background: #e0f2fe; color: #075985; }
+        table.counts .mini { border-collapse: collapse; margin: 0 auto 3px; }
+        table.counts .mini th, table.counts .mini td { border: 1px solid #d1d5db; font-size: 7px; padding: 1px 4px; }
+        table.counts .mini th { font-weight: bold; }
+        table.counts .mini td { font-size: 8px; font-weight: bold; color: #111827; background: #fff; }
         table.data { width: 100%; border-collapse: collapse; margin-top: 6px; }
         table.data th, table.data td { border: 1px solid #d1d5db; padding: 5px 6px; text-align: left; }
         table.data th { background: #f3f4f6; font-size: 9px; }
@@ -88,13 +99,20 @@
         .remnant-inline-legend .remnant-inline-item {
             display: block;
         }
-        .diagram img { max-width: 180mm; max-height: 100mm; width: auto; height: auto; display: block; margin: 0 auto; }
+        .diagram img { max-width: 168mm; max-height: 62mm; width: auto; height: auto; display: block; margin: 0 auto; }
+        .board-block { margin: 0 0 4px; }
+        .board-block h3 { font-size: 9px; margin: 1px 0; }
+        .board-block .board-use { font-size: 8px; margin: 1px 0 2px; }
+        .board-block .diagram { margin-top: 1px; }
+        .board-block table.data.compact { width: 100%; margin-top: 2px; }
+        .board-block table.data.compact th,
+        .board-block table.data.compact td { padding: 1px 3px; font-size: 7px; }
         table.data.compact th, table.data.compact td { padding: 2px 4px; font-size: 8px; }
         table.data.compact td.piece-use { font-size: 8px; }
         table.data.compact.pieces-table,
         table.data.pieces-list {
             table-layout: fixed;
-            width: 60%;
+            width: 100%;
         }
         table.data.compact.pieces-table th,
         table.data.pieces-list th {
@@ -104,7 +122,7 @@
         table.data.compact.remnants-table {
             margin-top: 6px;
             table-layout: fixed;
-            width: 60%;
+            width: 100%;
         }
         table.data.compact.remnants-table th,
         table.data.remnants-list th {
@@ -115,7 +133,7 @@
         table.data.remnants-list {
             table-layout: fixed;
             margin-top: 2px;
-            width: 60%;
+            width: 100%;
         }
         table.data.remnants-list th,
         table.data.remnants-list td {
@@ -192,7 +210,7 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        table.data.hanging-bars-list { table-layout: fixed; margin-top: 4px; width: 60%; }
+        table.data.hanging-bars-list { table-layout: fixed; margin-top: 4px; width: 100%; }
         table.hanging-bars-list th, table.hanging-bars-list td {
             padding: 1px 4px;
             font-size: 8px;
@@ -209,7 +227,7 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        table.data.drawers-list { table-layout: fixed; margin-top: 4px; width: 60%; }
+        table.data.drawers-list { table-layout: fixed; margin-top: 4px; width: 100%; }
         table.drawers-list th, table.drawers-list td {
             padding: 1px 4px;
             font-size: 8px;
@@ -221,6 +239,45 @@
         table.drawers-list .col-name { width: 28%; }
         table.drawers-list .col-num { width: 20%; }
         .page-break { page-break-before: always; }
+        table.sheet-summary { width: 100%; border-collapse: collapse; margin: 0 0 6px; }
+        table.sheet-summary th {
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 3px 6px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        table.sheet-summary td {
+            padding: 3px 6px;
+            font-size: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            vertical-align: middle;
+        }
+        table.sheet-summary .col-title { width: 42%; font-weight: bold; color: #111827; }
+        table.sheet-summary .col-qty { width: 14%; text-align: center; font-weight: bold; }
+        table.sheet-summary .col-origin { width: 28%; text-align: left; font-size: 9px; color: #4b5563; }
+        table.sheet-summary .col-measure { width: 44%; text-align: right; }
+        table.sheet-summary td.measure-red {
+            color: #b91c1c;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        .band {
+            font-size: 9px;
+            font-weight: bold;
+            padding: 3px 6px;
+            margin: 8px 0 0;
+        }
+        .band-pieces { background: #dbeafe; color: #1e40af; }
+        .band-remnants { background: #fee2e2; color: #991b1b; }
+        .band-drawers { background: #f3e8ff; color: #6b21a8; }
+        .band-bars { background: #ffedd5; color: #9a3412; }
+        table.tone-pieces th { background: #dbeafe; color: #1e40af; }
+        table.tone-remnants th { background: #fee2e2; color: #991b1b; }
+        table.tone-drawers th { background: #f3e8ff; color: #6b21a8; }
+        table.tone-bars th { background: #ffedd5; color: #9a3412; }
         .muted { color: #6b7280; font-size: 10px; }
         .muted.small { font-size: 8px; }
         .badge { display: inline-block; padding: 1px 6px; background: #e5e7eb; border-radius: 3px; font-size: 10px; }
@@ -274,14 +331,13 @@
                 <div class="fact-value"><span class="hl-type">{{ $sideDetail }}</span></div>
             </td>
             <td>
-                <div class="fact-label">Módulos</div>
-                <div class="fact-value">{{ $configuration['module_count'] ?? 1 }}</div>
                 @if(!empty($interiorLaterals) && is_array($interiorLaterals))
-                    <div class="fact-label" style="margin-top:4px;">Laterales interiores</div>
+                    <div class="fact-label">Laterales interiores</div>
                     @foreach($interiorLaterals as $lateral)
                         <div class="fact-sub">{{ $lateral['use'] }} — {{ $lateral['board_mm'] }} mm — {{ measure_format($lateral['width_cm']) }} × {{ measure_format($lateral['height_cm']) }} cm</div>
                     @endforeach
                 @elseif((int) ($configuration['interior_laterals_count'] ?? 0) > 0)
+                    <div class="fact-label">Laterales interiores</div>
                     <div class="fact-sub">
                         {{ (int) $configuration['interior_laterals_count'] }} lateral(es), tablero {{ $configuration['interior_lateral_board_mm'] ?? 16 }} mm
                         @if(!empty($configuration['lateral_interior_depths_cm'][1]))
@@ -289,6 +345,38 @@
                         @endif
                     </div>
                 @endif
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <table class="counts">
+                    <tr>
+                        <td>
+                            <div class="count-title tone-orange">Módulos</div>
+                            <div class="count-value">{{ $configuration['module_count'] ?? 1 }}</div>
+                        </td>
+                        <td>
+                            <div class="count-title tone-green">Baldas</div>
+                            <div class="count-value">{{ $configuration['shelf_count'] ?? 0 }}</div>
+                        </td>
+                        <td>
+                            <div class="count-title tone-blue">Cajones</div>
+                            <div class="count-value">{{ $drawersCount >= 1 ? $drawersCount : '—' }}</div>
+                            @if($drawersCount >= 1)
+                                <table class="mini">
+                                    <tr>
+                                        <th class="tone-blue">Ancho</th>
+                                        <th class="tone-blue">Alto</th>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ filled($configuration['drawer_width_cm'] ?? null) ? measure_format((float) $configuration['drawer_width_cm']).' cm' : '—' }}</td>
+                                        <td>{{ filled($configuration['drawer_height_cm'] ?? null) ? measure_format((float) $configuration['drawer_height_cm']).' cm' : '—' }}</td>
+                                    </tr>
+                                </table>
+                            @endif
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
         <tr>
@@ -322,10 +410,7 @@
                     </tr>
                 </table>
             </td>
-            <td>
-                <div class="fact-label">Baldas</div>
-                <div class="fact-value">{{ $configuration['shelf_count'] ?? 0 }}</div>
-            </td>
+            <td></td>
         </tr>
         <tr>
             <td>
@@ -359,29 +444,7 @@
                 </table>
             </td>
             <td>
-                <div class="fact-label">Cajones</div>
-                <div class="fact-value">
-                    @if($drawersCount >= 1)
-                        {{ $drawersCount }} {{ $drawersCount === 1 ? 'cajón' : 'cajones' }}
-                    @else
-                        —
-                    @endif
-                </div>
-                @if($drawersCount >= 1)
-                    <table class="measure-box">
-                        <tr>
-                            <th>Ancho</th>
-                            <th>Alto</th>
-                            <th>Fondo</th>
-                        </tr>
-                        <tr>
-                            <td>{{ filled($configuration['drawer_width_cm'] ?? null) ? measure_format((float) $configuration['drawer_width_cm']).' cm' : '—' }}</td>
-                            <td>{{ filled($configuration['drawer_height_cm'] ?? null) ? measure_format((float) $configuration['drawer_height_cm']).' cm' : '—' }}</td>
-                            <td>{{ filled($configuration['drawer_depth_cm'] ?? null) ? measure_format((float) $configuration['drawer_depth_cm']).' cm' : '—' }}</td>
-                        </tr>
-                    </table>
-                @endif
-                <div class="fact-label" style="margin-top:4px;">Barras de colgar</div>
+                <div class="fact-label">Barras de colgar</div>
                 <div class="fact-value">
                     @if($hangingBarsCount >= 1)
                         {{ $hangingBarsCount }} {{ $hangingBarsCount === 1 ? 'barra' : 'barras' }}
@@ -503,302 +566,179 @@
     </table>
 
     <div class="page-break">
-    <h2>4. Piezas a usar (con medidas)</h2>
-    <table class="data pieces-list">
-        <thead>
-            <tr>
-                <th class="col-code">Código</th>
-                <th class="col-name">Nombre de la pieza</th>
-                <th class="col-use">Para qué se usa</th>
-                <th class="col-num">Ancho (cm)</th>
-                <th class="col-num">Alto (cm)</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($namedPieces as $piece)
-                <tr>
-                    <td class="col-code">{{ $piece['code'] }}</td>
-                    <td class="col-name"><strong>{{ $piece['name'] }}</strong></td>
-                    <td class="col-use piece-use">{{ $piece['use'] ?? '—' }}</td>
-                    <td class="col-num measure">{{ measure_format($piece['width_cm']) }}</td>
-                    <td class="col-num measure">{{ measure_format($piece['height_cm']) }}</td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="5">Sin piezas calculadas.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+        <h2>4. Resumen de tablas</h2>
 
-        <h2 class="section-tight">5. Piezas sobrantes / remanentes</h2>
-        <table class="data remnants-list">
+        <div class="band band-pieces">Piezas</div>
+        <table class="sheet-summary tone-pieces">
             <thead>
                 <tr>
-                    <th class="col-name">Nombre</th>
-                    <th class="col-board">Tablero origen</th>
-                    <th class="col-num">Ancho (cm)</th>
-                    <th class="col-num">Alto (cm)</th>
+                    <th class="col-title">Pieza</th>
+                    <th class="col-qty">Cant.</th>
+                    <th class="col-measure">Medidas</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($namedRemnants as $remnant)
+                @forelse(($pieceSummary ?? []) as $row)
                     <tr>
-                        <td class="col-name remnant-code">{{ $remnant['name'] }}</td>
-                        <td class="col-board">{{ $remnant['board'] }}</td>
-                        <td class="col-num measure">{{ measure_format($remnant['width_cm']) }}</td>
-                        <td class="col-num measure">{{ measure_format($remnant['height_cm']) }}</td>
+                        <td class="col-title">{{ $row['title'] }}</td>
+                        <td class="col-qty">{{ $row['quantity'] }}</td>
+                        <td class="col-measure measure-red">{{ measure_format($row['width_cm']) }} × {{ measure_format($row['height_cm']) }} × {{ $row['thickness_mm'] }} mm</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4">Sin remanentes registrados.</td>
+                        <td colspan="3">Sin piezas calculadas.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
 
-        @php
-            $hasDrawers = !empty($drawers ?? []) && count($drawers) > 0;
-            $hasHangingBars = !empty($hangingBars ?? []) && count($hangingBars) > 0;
-            $accessorySection = 6;
-        @endphp
-
-        @if($hasDrawers)
-            <h2 class="section-tight">{{ $accessorySection }}. Cajones</h2>
-            <table class="data drawers-list drawers-table">
+        @if(!empty($namedRemnants))
+            <div class="band band-remnants">Sobrantes</div>
+            <table class="sheet-summary tone-remnants">
                 <thead>
                     <tr>
-                        <th class="col-code">Código</th>
-                        <th class="col-name">Nombre</th>
-                        <th class="col-num">Ancho (cm)</th>
-                        <th class="col-num">Alto (cm)</th>
-                        <th class="col-num">Profundidad (cm)</th>
+                        <th class="col-title">Sobrante</th>
+                        <th class="col-origin">Tablero</th>
+                        <th class="col-measure">Medidas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($namedRemnants as $remnant)
+                        <tr>
+                            <td class="col-title">{{ $remnant['name'] }}</td>
+                            <td class="col-origin">{{ $remnant['board'] }}</td>
+                            <td class="col-measure measure-red">{{ measure_format($remnant['width_cm']) }} × {{ measure_format($remnant['height_cm']) }} cm</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+        @if(!empty($drawers))
+            <div class="band band-drawers">Cajones</div>
+            <table class="sheet-summary tone-drawers">
+                <thead>
+                    <tr>
+                        <th class="col-title">Cajón</th>
+                        <th class="col-qty">Cant.</th>
+                        <th class="col-measure">Medidas</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($drawers as $drawer)
                         <tr>
-                            <td class="col-code">{{ $drawer['code'] }}</td>
-                            <td class="col-name"><strong>{{ $drawer['name'] }}</strong></td>
-                            <td class="col-num measure">
-                                {{ isset($drawer['width_cm']) ? measure_format($drawer['width_cm']) : '—' }}
-                            </td>
-                            <td class="col-num measure">
-                                {{ isset($drawer['height_cm']) ? measure_format($drawer['height_cm']) : '—' }}
-                            </td>
-                            <td class="col-num measure">
-                                {{ isset($drawer['depth_cm']) ? measure_format($drawer['depth_cm']) : '—' }}
-                            </td>
+                            <td class="col-title">{{ $drawer['name'] }}</td>
+                            <td class="col-qty">1</td>
+                            <td class="col-measure measure-red">{{ isset($drawer['width_cm']) ? measure_format($drawer['width_cm']) : '—' }} × {{ isset($drawer['height_cm']) ? measure_format($drawer['height_cm']) : '—' }} × {{ isset($drawer['depth_cm']) ? measure_format($drawer['depth_cm']) : '—' }} cm</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-            @php $accessorySection++; @endphp
         @endif
 
-        @if($hasHangingBars)
-            <h2 class="section-tight">{{ $accessorySection }}. Barras de colgar</h2>
-            <table class="data hanging-bars-list hanging-bars-table">
+        @if(!empty($hangingBars))
+            <div class="band band-bars">Barras de colgar</div>
+            <table class="sheet-summary tone-bars">
                 <thead>
                     <tr>
-                        <th class="col-code">Código</th>
-                        <th class="col-name">Nombre</th>
-                        <th class="col-num">Longitud (cm)</th>
+                        <th class="col-title">Barra</th>
+                        <th class="col-qty">Cant.</th>
+                        <th class="col-measure">Largo</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($hangingBars as $bar)
                         <tr>
-                            <td class="col-code">{{ $bar['code'] }}</td>
-                            <td class="col-name"><strong>{{ $bar['name'] }}</strong></td>
-                            <td class="col-num measure">
-                                {{ isset($bar['length_cm']) ? measure_format($bar['length_cm']) : '—' }}
-                            </td>
+                            <td class="col-title">{{ $bar['name'] }}</td>
+                            <td class="col-qty">1</td>
+                            <td class="col-measure measure-red">{{ isset($bar['length_cm']) ? measure_format($bar['length_cm']) : '—' }} cm</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-            @php $accessorySection++; @endphp
         @endif
     </div>
 
-    @php
-        $cutSectionNumber = $accessorySection;
-        $backSectionNumber = $cutSectionNumber + 1;
-    @endphp
-
-    @foreach(($structureBoardPages ?? []) as $pageDiagrams)
+    @foreach(($cutDiagramPages ?? []) as $pageDiagrams)
         <div class="board-page">
             @if($loop->first)
-                <h2>{{ $cutSectionNumber }}. Cortes de tablero ({{ $structureBoard['thickness_mm'] ?? 16 }} mm)</h2>
+                <h2>5. Cortes</h2>
             @endif
 
-            <table class="boards-pair">
-                <tr>
-                    @foreach($pageDiagrams as $diagram)
-                        <td>
-                            <div class="board-block">
-                                @php
-                                    $boardNum = $diagram['board']['index']
-                                        ?? $diagram['index']
-                                        ?? $loop->iteration;
-                                @endphp
-                                <h3>
-                                    <span class="board-badge">TABLERO {{ $boardNum }}</span>
-                                    ({{ $structureBoard['thickness_mm'] ?? 16 }} mm)
-                                    — {{ measure_format($diagram['width_cm']) }} × {{ measure_format($diagram['height_cm']) }} cm
-                                </h3>
-                                <div class="board-use">Uso: {{ $diagram['board']['use'] ?? '—' }}</div>
-                                @if(!empty($diagram['board']['remnants']))
-                                    <div class="remnant-inline-legend">
-                                        @foreach($diagram['board']['remnants'] as $remnant)
-                                            <span class="remnant-inline-item">
-                                                {{ $loop->iteration }}. {{ $remnant['label'] ?? 'S-00' }}
-                                                — {{ measure_format($remnant['width']) }} x {{ measure_format($remnant['height']) }} cm
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                @endif
-                                <div class="diagram">
-                                    <img src="{{ $diagram['image'] }}" alt="{{ $diagram['board']['title'] ?? 'Tablero' }}">
-                                </div>
-                                @php $board = $diagram['board'] ?? null; @endphp
-                                @if($board)
-                                    <table class="data compact pieces-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Pieza</th>
-                                                <th>Para qué se usa</th>
-                                                <th>Medidas</th>
-                                                <th>Posición (x,y)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach(($board['placements'] ?? []) as $placement)
-                                                <tr>
-                                                    <td>{{ $placement['label'] }}</td>
-                                                    <td class="piece-use">{{ $placement['use'] ?? '—' }}</td>
-                                                    <td class="measure">{{ measure_format($placement['width']) }}×{{ measure_format($placement['height']) }}</td>
-                                                    <td class="measure">{{ measure_format($placement['x']) }},{{ measure_format($placement['y']) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                    @if(!empty($board['remnants']))
-                                        <table class="data compact remnants-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sobrante</th>
-                                                    <th>Para qué se usa</th>
-                                                    <th>Medidas</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($board['remnants'] as $remnant)
-                                                    <tr>
-                                                        <td class="remnant-code">{{ $remnant['label'] ?? 'S-00' }}</td>
-                                                        <td class="piece-use">Sobrante / remanente</td>
-                                                        <td class="measure">{{ measure_format($remnant['width']) }}×{{ measure_format($remnant['height']) }}</td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    @endif
-                                @endif
-                            </div>
-                        </td>
-                    @endforeach
-                </tr>
-            </table>
+            @foreach($pageDiagrams as $diagram)
+                <div class="board-block">
+                    @php
+                        $boardNum = $diagram['board']['index']
+                            ?? $diagram['index']
+                            ?? $loop->iteration;
+                        $thickness = $diagram['thickness_mm'] ?? ($structureBoard['thickness_mm'] ?? 16);
+                    @endphp
+                    <h3>
+                        <span class="board-badge">TABLERO {{ $boardNum }}</span>
+                        ({{ $thickness }} mm)
+                        — {{ measure_format($diagram['width_cm']) }} × {{ measure_format($diagram['height_cm']) }} cm
+                    </h3>
+                    <div class="board-use">{{ $diagram['board']['use'] ?? '—' }}</div>
+                    @if(!empty($diagram['board']['remnants']))
+                        <div class="remnant-inline-legend">
+                            @foreach($diagram['board']['remnants'] as $remnant)
+                                <span class="remnant-inline-item">
+                                    {{ $loop->iteration }}. {{ $remnant['label'] ?? 'S-00' }}
+                                    — {{ measure_format($remnant['width']) }} x {{ measure_format($remnant['height']) }} cm
+                                </span>
+                            @endforeach
+                        </div>
+                    @endif
+                    <div class="diagram">
+                        <img src="{{ $diagram['image'] }}" alt="{{ $diagram['board']['title'] ?? 'Tablero' }}">
+                    </div>
+                    @php $board = $diagram['board'] ?? null; @endphp
+                    @if($board)
+                        <table class="data compact pieces-table">
+                            <thead>
+                                <tr>
+                                    <th>Pieza</th>
+                                    <th>Para qué se usa</th>
+                                    <th>Medidas</th>
+                                    <th>Posición (x,y)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(($board['placements'] ?? []) as $placement)
+                                    <tr>
+                                        <td>{{ $placement['label'] }}</td>
+                                        <td class="piece-use">{{ $placement['use'] ?? '—' }}</td>
+                                        <td class="measure">{{ measure_format($placement['width']) }}×{{ measure_format($placement['height']) }}</td>
+                                        <td class="measure">{{ measure_format($placement['x']) }},{{ measure_format($placement['y']) }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        @if(!empty($board['remnants']))
+                            <table class="data compact remnants-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sobrante</th>
+                                        <th>Para qué se usa</th>
+                                        <th>Medidas</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($board['remnants'] as $remnant)
+                                        <tr>
+                                            <td class="remnant-code">{{ $remnant['label'] ?? 'S-00' }}</td>
+                                            <td class="piece-use">Sobrante / remanente</td>
+                                            <td class="measure">{{ measure_format($remnant['width']) }}×{{ measure_format($remnant['height']) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @endif
+                    @endif
+                </div>
+            @endforeach
         </div>
     @endforeach
 
-    @foreach(($backBoardPages ?? []) as $pageDiagrams)
-        <div class="board-page">
-            @if($loop->first)
-                <h2>{{ $backSectionNumber }}. Corte del fondo del mueble ({{ $backBoard['thickness_mm'] ?? 10 }} mm)</h2>
-                <p class="board-use">Uso: 1 tablero normal — {{ $backBoard['quantity'] ?? 1 }} fondo(s) — {{ isset($global['width_cm']) ? measure_format($global['width_cm']) : '—' }} × {{ isset($global['height_cm']) ? measure_format($global['height_cm']) : '—' }} cm (1 corte)</p>
-                <p class="muted">Vista horizontal del tablero. Diagrama sobre tablero completo {{ measure_format($boardSize['width_cm']) }} × {{ measure_format($boardSize['height_cm']) }} cm.</p>
-            @endif
-
-            <table class="boards-pair">
-                <tr>
-                    @foreach($pageDiagrams as $diagram)
-                        <td>
-                            <div class="board-block">
-                                @php
-                                    $boardNum = $diagram['board']['index']
-                                        ?? $diagram['index']
-                                        ?? $loop->iteration;
-                                @endphp
-                                <h3>
-                                    <span class="board-badge">TABLERO {{ $boardNum }}</span>
-                                    ({{ $backBoard['thickness_mm'] ?? 10 }} mm)
-                                    — {{ measure_format($diagram['width_cm']) }} × {{ measure_format($diagram['height_cm']) }} cm
-                                </h3>
-                                <div class="board-use">{{ $diagram['board']['use'] ?? 'Uso: fondo del mueble (1 corte sobre 1 tablero normal)' }}</div>
-                                @if(!empty($diagram['board']['remnants']))
-                                    <div class="remnant-inline-legend">
-                                        @foreach($diagram['board']['remnants'] as $remnant)
-                                            <span class="remnant-inline-item">
-                                                {{ $loop->iteration }}. {{ $remnant['label'] ?? 'S-00' }}
-                                                — {{ measure_format($remnant['width']) }} x {{ measure_format($remnant['height']) }} cm
-                                            </span>
-                                        @endforeach
-                                    </div>
-                                @endif
-                                <div class="diagram">
-                                    <img src="{{ $diagram['image'] }}" alt="Fondo del mueble">
-                                </div>
-                                @php $board = $diagram['board'] ?? null; @endphp
-                                @if($board)
-                                    <table class="data compact pieces-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Pieza</th>
-                                                <th>Para qué se usa</th>
-                                                <th>Medidas</th>
-                                                <th>Posición (x,y)</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @foreach(($board['placements'] ?? []) as $placement)
-                                                <tr>
-                                                    <td>{{ $placement['label'] }}</td>
-                                                    <td class="piece-use">{{ $placement['use'] ?? '—' }}</td>
-                                                    <td class="measure">{{ measure_format($placement['width']) }}×{{ measure_format($placement['height']) }}</td>
-                                                    <td class="measure">{{ measure_format($placement['x']) }},{{ measure_format($placement['y']) }}</td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                    @if(!empty($board['remnants']))
-                                        <table class="data compact remnants-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Sobrante</th>
-                                                    <th>Para qué se usa</th>
-                                                    <th>Medidas</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach($board['remnants'] as $remnant)
-                                                    <tr>
-                                                        <td class="remnant-code">{{ $remnant['label'] ?? 'S-00' }}</td>
-                                                        <td class="piece-use">Sobrante / remanente</td>
-                                                        <td class="measure">{{ measure_format($remnant['width']) }}×{{ measure_format($remnant['height']) }}</td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    @endif
-                                @endif
-                            </div>
-                        </td>
-                    @endforeach
-                </tr>
-            </table>
-        </div>
-    @endforeach
 </body>
 </html>
