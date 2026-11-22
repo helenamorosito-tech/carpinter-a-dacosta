@@ -568,9 +568,10 @@ class FurniturePresetForm
                         ]),
                     Step::make('Tablero')
                         ->schema([
-                            self::furnitureTypeBanner(),
                             Section::make('Tablero')
                                 ->description('Hoja de corte, grosor de la caja y fondo. Máximo 122 × 244 cm.')
+                                ->extraAttributes(['class' => 'fi-section-board'])
+                                ->collapsed()
                                 ->columns(5)
                                 ->schema([
                                     TextInput::make('board_width_cm')
@@ -634,17 +635,15 @@ class FurniturePresetForm
                                         ->default(FurniturePreset::DEFAULT_BACK_BOARD_QUANTITY)
                                         ->required()
                                         ->live(onBlur: true),
-                                ]),
-                            Section::make('Color')
-                                ->schema([
                                     Radio::make('selected_boards')
-                                        ->label('Material')
+                                        ->label('Color')
                                         ->options(fn (Get $get): array => BoardMaterialOptions::optionsForThickness(
                                             (int) ($get('structure_board_thickness_mm') ?? 16),
                                         ))
                                         ->default(BoardMaterialOptions::defaultSelected()[0] ?? 'blanco_16')
                                         ->required()
                                         ->columns(4)
+                                        ->columnSpanFull()
                                         ->live()
                                         ->afterStateUpdated(function (mixed $state, Set $set): void {
                                             if (! filled($state) || is_array($state)) {
@@ -659,6 +658,7 @@ class FurniturePresetForm
                                 ]),
                             Section::make('Mecanizados')
                                 ->extraAttributes(['class' => 'fi-section-machining'])
+                                ->collapsed()
                                 ->description('Herrajes y taladros de la ficha. Si dejas la cantidad vacía, se calcula. Abajo puedes añadir otros, con nombre y posición.')
                                 ->columns(4)
                                 ->schema([

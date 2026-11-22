@@ -49,11 +49,22 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => Blade::render(<<<'BLADE'
                     <style>
+                        .fi-header-heading:has(.fi-edit-heading) {
+                            width: 100%;
+                        }
+
                         .fi-edit-heading {
                             display: flex;
-                            flex-direction: column;
-                            align-items: flex-start;
-                            gap: 0.4rem;
+                            flex-direction: row;
+                            align-items: center;
+                            justify-content: flex-start;
+                            gap: 1.75rem;
+                            width: 100%;
+                        }
+
+                        .fi-edit-heading > span:first-child {
+                            flex: 0 0 auto;
+                            white-space: nowrap;
                         }
 
                         /* El título largo no se aplasta a una palabra por línea junto a los botones */
@@ -356,6 +367,33 @@ class AdminPanelProvider extends PanelProvider
 
                         .dark .fi-section-walls .fi-section-header-description {
                             color: #e4d4f5 !important;
+                        }
+
+                        /* Tablero: naranja claro, y naranja oscuro en modo oscuro */
+                        .fi-section-board > .fi-section:not(.fi-aside) {
+                            background-color: #fff1e6 !important;
+                            --tw-ring-color: rgb(234 140 70 / 0.45) !important;
+                        }
+
+                        .fi-section-board > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #f3d2b8 !important;
+                        }
+
+                        .dark .fi-section-board > .fi-section:not(.fi-aside) {
+                            background-color: #3d2616 !important;
+                            --tw-ring-color: rgb(232 160 96 / 0.4) !important;
+                        }
+
+                        .dark .fi-section-board > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(232 160 96 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-board .fi-section-header-heading {
+                            color: #fff6ee !important;
+                        }
+
+                        .dark .fi-section-board .fi-section-header-description {
+                            color: #f0d2bc !important;
                         }
                     </style>
                 BLADE),
