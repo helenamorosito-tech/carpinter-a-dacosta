@@ -40,22 +40,20 @@ class FurnitureElevationPngGenerator
         $modules = max(1, (int) ($spec['modules'] ?? 1));
         $heightCm = max(1.0, (float) ($spec['height_cm'] ?? 1));
         $widthCm = max(1.0, (float) ($spec['width_cm'] ?? 1));
-        $moduleWidthCm = $widthCm / $modules;
-        $aspect = $heightCm / max(1.0, $moduleWidthCm);
+        $aspect = $heightCm / $widthCm;
 
-        $cabinetW = 280;
+        $cabinetW = 760;
         $cabinetH = (int) round($cabinetW * $aspect);
-        $maxH = 820;
+        $maxH = 1040;
 
         if ($cabinetH > $maxH) {
             $cabinetH = $maxH;
-            $cabinetW = max(90, (int) round($cabinetH / $aspect));
+            $cabinetW = max(120, (int) round($cabinetH / $aspect));
         }
 
-        $pad = 6;
-        $gap = $modules > 1 ? 26 : 0;
-        $labelH = $modules > 1 ? 40 : 0;
-        $canvasW = ($cabinetW * $modules) + ($gap * max(0, $modules - 1)) + (2 * $pad);
+        $pad = 8;
+        $labelH = $modules > 1 ? 42 : 0;
+        $canvasW = $cabinetW + (2 * $pad);
         $canvasH = $cabinetH + $labelH + (2 * $pad);
         $originX = $pad;
         $originY = $pad;
@@ -69,37 +67,28 @@ class FurnitureElevationPngGenerator
             imageantialias($image, true);
         }
 
-        $widths = $spec['module_widths_mm'] ?? [];
+        $inner = $this->drawCabinet(
+            $image,
+            $originX,
+            $originY,
+            $cabinetW,
+            $cabinetH,
+            $ink,
+            (bool) ($spec['has_trunk'] ?? true),
+            $widthCm,
+        );
 
-        for ($index = 0; $index < $modules; $index++) {
-            $x = $originX + ($index * ($cabinetW + $gap));
-
-            $this->drawCabinet(
-                $image,
-                $x,
-                $originY,
-                $cabinetW,
-                $cabinetH,
-                $ink,
-                (int) ($spec['verticals'] ?? 0),
-                (bool) ($spec['has_trunk'] ?? true),
-            );
-
-            if ($modules > 1) {
-                $label = (string) ($widths[$index] ?? '');
-                $size = 18;
-                $textW = DrawingFont::textWidth($label, $size, true);
-                DrawingFont::draw(
-                    $image,
-                    $size,
-                    $x + (int) (($cabinetW - $textW) / 2),
-                    $originY + $cabinetH + 26,
-                    $label,
-                    $ink,
-                    true,
-                );
-            }
-        }
+        $this->drawModules(
+            $image,
+            $inner,
+            $modules,
+            (int) ($spec['verticals'] ?? 0),
+            $spec['module_widths_mm'] ?? [],
+            is_array($spec['shelves'] ?? null) ? $spec['shelves'] : [],
+            is_array($spec['drawers'] ?? null) ? $spec['drawers'] : [],
+            $ink,
+            $originY + $cabinetH + 28,
+        );
 
         ob_start();
         imagepng($image);
@@ -109,6 +98,11 @@ class FurnitureElevationPngGenerator
         return is_string($binary) ? $binary : '';
     }
 
+    /**
+     * Marco a escala: el grueso sigue al tablero de 16 mm respecto al ancho real.
+     *
+     * @return array{x: int, y: int, w: int, h: int, rail: int}
+     */
     private function drawCabinet(
         $image,
         int $x,
@@ -116,12 +110,13 @@ class FurnitureElevationPngGenerator
         int $w,
         int $h,
         int $ink,
-        int $verticals,
         bool $hasTrunk,
-    ): void {
+        float $widthCm,
+    ): array {
         $frame = imagecolorallocate($image, 214, 214, 214);
         $paper = imagecolorallocate($image, 255, 255, 255);
-        $inset = max(18, min(34, (int) round(min($w, $h) * 0.08)));
+        $pxPerCm = $w / max(1.0, $widthCm);
+        $inset = max(4, (int) round(1.6 * $pxPerCm));
         $ix = $x + $inset;
         $iy = $y + $inset;
         $iw = max(8, $w - (2 * $inset));
@@ -129,9 +124,8 @@ class FurnitureElevationPngGenerator
 
         imagefilledrectangle($image, $x, $y, $x + $w, $y + $h, $frame);
         imagefilledrectangle($image, $ix, $iy, $ix + $iw, $iy + $ih, $paper);
-        imagesetthickness($image, 3);
-        imagerectangle($image, $x, $y, $x + $w, $y + $h, $ink);
         imagesetthickness($image, 2);
+        imagerectangle($image, $x, $y, $x + $w, $y + $h, $ink);
         imagerectangle($image, $ix, $iy, $ix + $iw, $iy + $ih, $ink);
 
         $railY = $iy;
@@ -140,12 +134,258 @@ class FurnitureElevationPngGenerator
             imageline($image, $ix, $railY, $ix + $iw, $railY, $ink);
         }
 
-        $verticals = max(0, $verticals);
-        for ($i = 1; $i <= $verticals; $i++) {
-            $vx = $ix + (int) round($iw * $i / ($verticals + 1));
-            imageline($image, $vx, $railY, $vx, $iy + $ih, $ink);
+        imagesetthickness($image, 1);
+
+        return [
+            'x' => $ix,
+            'y' => $iy,
+            'w' => $iw,
+            'h' => $ih,
+            'rail' => $railY,
+            'px' => $pxPerCm,
+        ];
+    }
+
+    /**
+     * @param  array{x: int, y: int, w: int, h: int, rail: int, px: float}  $inner
+     * @param  list<int>  $widthsMm
+     * @param  list<array{width_cm?: float}>  $shelves
+     * @param  array{count?: int, width_cm?: float, height_cm?: float}  $drawers
+     */
+    private function drawModules(
+        $image,
+        array $inner,
+        int $modules,
+        int $verticals,
+        array $widthsMm,
+        array $shelves,
+        array $drawers,
+        int $ink,
+        int $labelBaseline,
+    ): void {
+        $shares = [];
+        $sum = 0;
+        for ($index = 0; $index < $modules; $index++) {
+            $share = max(1, (int) ($widthsMm[$index] ?? 0));
+            $shares[] = $share;
+            $sum += $share;
+        }
+        if ($sum <= 0) {
+            $shares = array_fill(0, $modules, 1);
+            $sum = $modules;
+        }
+
+        $cursor = $inner['x'];
+        $bottom = $inner['y'] + $inner['h'];
+        $bays = [];
+
+        for ($index = 0; $index < $modules; $index++) {
+            $span = $index === $modules - 1
+                ? ($inner['x'] + $inner['w'] - $cursor)
+                : (int) round($inner['w'] * $shares[$index] / $sum);
+            $bays[] = [
+                'x' => $cursor,
+                'w' => $span,
+                'cm' => $span / max(0.01, $inner['px']),
+            ];
+            $cursor += $span;
+        }
+
+        $drawerTop = $this->drawFittings($image, $inner, $bays, $shelves, $drawers, $ink);
+
+        imagesetthickness($image, 2);
+        foreach ($bays as $index => $bay) {
+            $lineBottom = $drawerTop < $bottom && $this->drawersSpanAll($drawers, $inner) ? $drawerTop : $bottom;
+
+            if ($index > 0) {
+                imageline($image, $bay['x'], $inner['rail'], $bay['x'], $lineBottom, $ink);
+            }
+
+            $lines = max(0, $verticals);
+            for ($line = 1; $line <= $lines; $line++) {
+                $vx = $bay['x'] + (int) round($bay['w'] * $line / ($lines + 1));
+                imageline($image, $vx, $inner['rail'], $vx, $lineBottom, $ink);
+            }
+
+            if ($modules > 1) {
+                $label = (string) ($widthsMm[$index] ?? '');
+                $size = 16;
+                $textW = DrawingFont::textWidth($label, $size, true);
+                DrawingFont::draw(
+                    $image,
+                    $size,
+                    $bay['x'] + (int) (($bay['w'] - $textW) / 2),
+                    $labelBaseline,
+                    $label,
+                    $ink,
+                    true,
+                );
+            }
         }
 
         imagesetthickness($image, 1);
+    }
+
+    /**
+     * @param  array{x: int, y: int, w: int, h: int, rail: int, px: float}  $inner
+     * @param  list<array{x: int, w: int, cm: float}>  $bays
+     * @param  list<array{width_cm?: float}>  $shelves
+     * @param  array{count?: int, width_cm?: float, height_cm?: float}  $drawers
+     */
+    private function drawFittings($image, array $inner, array $bays, array $shelves, array $drawers, int $ink): int
+    {
+        $bottom = $inner['y'] + $inner['h'];
+        $px = max(0.01, $inner['px']);
+        $innerCm = $inner['w'] / $px;
+        $count = max(0, (int) ($drawers['count'] ?? 0));
+        $drawerWidth = (float) ($drawers['width_cm'] ?? 0);
+        $drawerHeight = (float) ($drawers['height_cm'] ?? 0);
+        if ($count > 0 && $drawerHeight <= 0) {
+            $drawerHeight = 16;
+        }
+
+        $fullDrawers = $count > 0 && $this->spanIsFull($drawerWidth, $innerCm);
+        $drawerBay = $fullDrawers ? null : ($count > 0 ? $this->bayIndex($drawerWidth, $bays) : null);
+
+        $shelfGroups = array_fill(0, count($bays), 0);
+        $fullShelves = 0;
+        foreach ($shelves as $shelf) {
+            $width = (float) ($shelf['width_cm'] ?? 0);
+            if ($this->spanIsFull($width, $innerCm)) {
+                $fullShelves++;
+                continue;
+            }
+            $shelfGroups[$this->bayIndex($width, $bays)]++;
+        }
+
+        $drawerTop = $bottom;
+        imagesetthickness($image, 2);
+
+        if ($count > 0) {
+            $zone = $fullDrawers
+                ? ['x' => $inner['x'], 'w' => $inner['w']]
+                : $bays[$drawerBay];
+            $drawerTop = $this->drawDrawerStack($image, $zone, $bottom, $inner['rail'], $count, $drawerWidth, $drawerHeight, $px, $ink);
+        }
+
+        if ($fullShelves > 0) {
+            $this->drawShelfLines(
+                $image,
+                $inner['x'],
+                $inner['w'],
+                $inner['rail'],
+                $fullDrawers ? $drawerTop : $bottom,
+                $fullShelves,
+                $ink,
+            );
+        }
+
+        foreach ($bays as $index => $bay) {
+            if ($shelfGroups[$index] < 1) {
+                continue;
+            }
+            $zoneBottom = (! $fullDrawers && $drawerBay === $index) ? $drawerTop : $bottom;
+            $this->drawShelfLines($image, $bay['x'], $bay['w'], $inner['rail'], $zoneBottom, $shelfGroups[$index], $ink);
+        }
+
+        imagesetthickness($image, 1);
+
+        return $fullDrawers ? $drawerTop : $bottom;
+    }
+
+    /**
+     * @param  array{x: int, w: int}  $zone
+     */
+    private function drawDrawerStack(
+        $image,
+        array $zone,
+        int $bottom,
+        int $rail,
+        int $count,
+        float $widthCm,
+        float $heightCm,
+        float $px,
+        int $ink,
+    ): int {
+        $gap = max(2, (int) round(0.4 * $px));
+        $frontH = max(6, (int) round($heightCm * $px));
+        $frontW = $widthCm > 0 ? (int) round($widthCm * $px) : $zone['w'];
+        $frontW = max(8, min($zone['w'] - 2, $frontW));
+        $available = $bottom - $rail - 8;
+        $needed = ($count * $frontH) + (max(0, $count - 1) * $gap);
+
+        if ($needed > $available && $count > 0) {
+            $frontH = max(5, (int) floor(($available - (max(0, $count - 1) * $gap)) / $count));
+        }
+
+        $x = $zone['x'] + (int) (($zone['w'] - $frontW) / 2);
+        $top = $bottom;
+
+        for ($index = 0; $index < $count; $index++) {
+            $y2 = $bottom - ($index * ($frontH + $gap));
+            $y1 = $y2 - $frontH;
+            if ($y1 <= $rail + 2) {
+                break;
+            }
+            imagerectangle($image, $x, $y1, $x + $frontW, $y2, $ink);
+            $mid = (int) (($y1 + $y2) / 2);
+            $handle = max(6, (int) round($frontW * 0.12));
+            imageline($image, $x + (int) ($frontW / 2) - $handle, $mid, $x + (int) ($frontW / 2) + $handle, $mid, $ink);
+            $top = $y1;
+        }
+
+        return $top;
+    }
+
+    private function drawShelfLines($image, int $x, int $w, int $top, int $bottom, int $count, int $ink): void
+    {
+        $span = $bottom - $top;
+        if ($count < 1 || $span < 12) {
+            return;
+        }
+
+        imagesetthickness($image, 2);
+        for ($index = 1; $index <= $count; $index++) {
+            $y = $top + (int) round($span * $index / ($count + 1));
+            imageline($image, $x + 2, $y, $x + $w - 2, $y, $ink);
+        }
+    }
+
+    /**
+     * @param  array{count?: int, width_cm?: float}  $drawers
+     * @param  array{w: int, px: float}  $inner
+     */
+    private function drawersSpanAll(array $drawers, array $inner): bool
+    {
+        $count = (int) ($drawers['count'] ?? 0);
+        if ($count < 1) {
+            return false;
+        }
+
+        return $this->spanIsFull((float) ($drawers['width_cm'] ?? 0), $inner['w'] / max(0.01, $inner['px']));
+    }
+
+    private function spanIsFull(float $widthCm, float $innerCm): bool
+    {
+        return $widthCm <= 0 || $widthCm >= $innerCm * 0.82;
+    }
+
+    /**
+     * @param  list<array{x: int, w: int, cm: float}>  $bays
+     */
+    private function bayIndex(float $widthCm, array $bays): int
+    {
+        $best = 0;
+        $bestDiff = PHP_FLOAT_MAX;
+
+        foreach ($bays as $index => $bay) {
+            $diff = abs($bay['cm'] - $widthCm);
+            if ($diff < $bestDiff) {
+                $best = $index;
+                $bestDiff = $diff;
+            }
+        }
+
+        return $best;
     }
 }

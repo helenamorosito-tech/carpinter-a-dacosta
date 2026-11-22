@@ -65,6 +65,8 @@ class TechnicalSheetBuilder
                 'has_trunk' => $this->hasTrunk($parts),
                 'hanging_bars' => max(0, (int) ($configuration['hanging_bars_count'] ?? 0)),
                 'module_widths_mm' => $moduleWidths,
+                'shelves' => $this->elevationShelves($configuration, $widthCm),
+                'drawers' => $this->elevationDrawers($configuration),
             ])
             : '';
 
@@ -418,6 +420,47 @@ class TechnicalSheetBuilder
     /**
      * @param  list<array{name: string}>  $parts
      */
+    /**
+     * @param  array<string, mixed>  $configuration
+     * @return list<array{width_cm: float}>
+     */
+    private function elevationShelves(array $configuration, float $widthCm): array
+    {
+        $shelves = [];
+        $listed = $configuration['additional_shelves'] ?? null;
+
+        if (is_array($listed) && $listed !== []) {
+            foreach ($listed as $shelf) {
+                if (! is_array($shelf)) {
+                    continue;
+                }
+                $shelves[] = ['width_cm' => (float) ($shelf['width_cm'] ?? 0)];
+            }
+
+            return $shelves;
+        }
+
+        $extra = max(0, (int) ($configuration['shelf_count'] ?? 0) - 1);
+        for ($index = 0; $index < $extra; $index++) {
+            $shelves[] = ['width_cm' => $widthCm > 0 ? max(0, $widthCm - 13) : 0];
+        }
+
+        return $shelves;
+    }
+
+    /**
+     * @param  array<string, mixed>  $configuration
+     * @return array{count: int, width_cm: float, height_cm: float}
+     */
+    private function elevationDrawers(array $configuration): array
+    {
+        return [
+            'count' => max(0, (int) ($configuration['drawers_count'] ?? 0)),
+            'width_cm' => (float) ($configuration['drawer_width_cm'] ?? 0),
+            'height_cm' => (float) ($configuration['drawer_height_cm'] ?? 0),
+        ];
+    }
+
     private function hasTrunk(array $parts): bool
     {
         foreach ($parts as $part) {
