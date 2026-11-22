@@ -95,16 +95,6 @@ trait HasCutSheetPdfActions
 
                     $livewire->js('window.open('.json_encode($url).', "_blank")');
                 }),
-            Action::make('downloadCutPdf')
-                ->label('Descargar PDF de cortes')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->color('gray')
-                ->action(function (Get $get) {
-                    $generator = app(PresetCutSheetPdfGenerator::class);
-                    $token = $generator->storePreviewFromFormData(self::cutSheetFormDataFromGet($get));
-
-                    return redirect()->away($generator->downloadUrl($token));
-                }),
         ];
     }
 
@@ -124,16 +114,6 @@ trait HasCutSheetPdfActions
                     $url = $generator->previewUrl($token);
 
                     $livewire->js('window.open('.json_encode($url).', "_blank")');
-                }),
-            Action::make('downloadTechnicalSheet')
-                ->label('Descargar ficha técnica')
-                ->icon('heroicon-o-arrow-down-tray')
-                ->color('primary')
-                ->action(function (Get $get) {
-                    $generator = app(TechnicalSheetPdfGenerator::class);
-                    $token = $generator->storePreviewFromFormData(self::cutSheetFormDataFromGet($get));
-
-                    return redirect()->away($generator->downloadUrl($token));
                 }),
         ];
     }

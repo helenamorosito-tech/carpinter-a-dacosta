@@ -22,7 +22,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Illuminate\Support\HtmlString;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -721,14 +723,13 @@ class FurniturePresetForm
                                                 ->maxLength(120)
                                                 ->placeholder('80 mm desde el canto superior del lateral'),
                                         ]),
-                                ]),
-                            Section::make('Posiciones del mecanizado')
-                                ->extraAttributes(['class' => 'fi-section-machining'])
-                                ->description('Distancias en milímetros desde el canto de la pieza. Si un campo queda vacío, el dibujo mantiene la posición esquemática. El cálculo automático se cierra cuando el cliente confirme cómo se miden.')
-                                ->columns(4)
-                                ->collapsed()
-                                ->schema([
-                                    TextInput::make('configuration.machining_positions.corner_x_mm')
+                                    Fieldset::make('Posiciones del mecanizado')
+                                        ->columnSpanFull()
+                                        ->columns(4)
+                                        ->schema([
+                                            Text::make('Distancias en milímetros desde el canto de la pieza. Si un campo queda vacío, el dibujo mantiene la posición esquemática.')
+                                                ->columnSpanFull(),
+                                            TextInput::make('configuration.machining_positions.corner_x_mm')
                                         ->label('Esquina, lado largo')
                                         ->numeric()
                                         ->minValue(1)
@@ -787,8 +788,10 @@ class FurniturePresetForm
                                         ->minValue(1)
                                         ->step(1)
                                         ->suffix('mm'),
+                                        ]),
                                 ]),
                             Section::make('Cálculo de cortes')
+                                ->extraAttributes(['class' => 'fi-section-cuts'])
                                 ->collapsed()
                                 ->description('Plan de cortes, aprovechamiento de sobrantes del almacén (S-XX) y tableros nuevos necesarios.')
                                 ->schema([

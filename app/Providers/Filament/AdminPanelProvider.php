@@ -395,6 +395,33 @@ class AdminPanelProvider extends PanelProvider
                         .dark .fi-section-board .fi-section-header-description {
                             color: #f0d2bc !important;
                         }
+
+                        /* Cálculo de cortes: amarillo claro, y ámbar oscuro en modo oscuro */
+                        .fi-section-cuts > .fi-section:not(.fi-aside) {
+                            background-color: #fff4cc !important;
+                            --tw-ring-color: rgb(202 160 48 / 0.55) !important;
+                        }
+
+                        .fi-section-cuts > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #ead48a !important;
+                        }
+
+                        .dark .fi-section-cuts > .fi-section:not(.fi-aside) {
+                            background-color: #3f3414 !important;
+                            --tw-ring-color: rgb(214 176 70 / 0.4) !important;
+                        }
+
+                        .dark .fi-section-cuts > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(214 176 70 / 0.35) !important;
+                        }
+
+                        .dark .fi-section-cuts .fi-section-header-heading {
+                            color: #fff8e8 !important;
+                        }
+
+                        .dark .fi-section-cuts .fi-section-header-description {
+                            color: #f0e2b8 !important;
+                        }
                     </style>
                 BLADE),
             )
