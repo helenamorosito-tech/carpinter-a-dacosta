@@ -193,6 +193,20 @@ class AdminPanelProvider extends PanelProvider
                             color: #c5d7e6 !important;
                         }
 
+                        .fi-fieldset-positions {
+                            background-color: #e8eaed !important;
+                            border-color: #d3d8de !important;
+                        }
+
+                        .dark .fi-fieldset-positions {
+                            background-color: #3a4150 !important;
+                            border-color: rgb(213 219 227 / 0.28) !important;
+                        }
+
+                        .dark .fi-fieldset-positions > legend {
+                            color: #f4f6f8 !important;
+                        }
+
                         /* Tipo de mueble: amarillo claro, y ámbar oscuro en modo oscuro */
                         .fi-section-furniture-type > .fi-section:not(.fi-aside) {
                             background-color: #fff4cc !important;
@@ -315,6 +329,16 @@ class AdminPanelProvider extends PanelProvider
                             color: #12321c;
                         }
 
+                        .fi-shelf-count-machining {
+                            background-color: #1d6fa5;
+                            color: #fff;
+                        }
+
+                        .dark .fi-shelf-count-machining {
+                            background-color: #d3ebf8;
+                            color: #123044;
+                        }
+
                         /* Cuerpo: gris claro, y gris más claro que el fondo en modo oscuro */
                         .fi-section-body > .fi-section:not(.fi-aside) {
                             background-color: #e8eaed !important;
@@ -340,6 +364,60 @@ class AdminPanelProvider extends PanelProvider
 
                         .dark .fi-section-body .fi-section-header-description {
                             color: #d5dbe3 !important;
+                        }
+
+                        /* Plan de corte y ficha técnica: verde claro, y verde oscuro en modo oscuro */
+                        .fi-section-plan > .fi-section:not(.fi-aside) {
+                            background-color: #e5f6e8 !important;
+                            --tw-ring-color: rgb(110 176 122 / 0.55) !important;
+                        }
+
+                        .fi-section-plan > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #b7dfc0 !important;
+                        }
+
+                        .dark .fi-section-plan > .fi-section:not(.fi-aside) {
+                            background-color: #1a3a28 !important;
+                            --tw-ring-color: rgb(134 196 150 / 0.38) !important;
+                        }
+
+                        .dark .fi-section-plan > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(134 196 150 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-plan .fi-section-header-heading {
+                            color: #f3faf5 !important;
+                        }
+
+                        .dark .fi-section-plan .fi-section-header-description {
+                            color: #c9e6d1 !important;
+                        }
+
+                        /* Costado visto: verde claro, y verde oscuro en modo oscuro */
+                        .fi-section-costado > .fi-section:not(.fi-aside) {
+                            background-color: #e5f6e8 !important;
+                            --tw-ring-color: rgb(110 176 122 / 0.55) !important;
+                        }
+
+                        .fi-section-costado > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #b7dfc0 !important;
+                        }
+
+                        .dark .fi-section-costado > .fi-section:not(.fi-aside) {
+                            background-color: #1a3a28 !important;
+                            --tw-ring-color: rgb(134 196 150 / 0.38) !important;
+                        }
+
+                        .dark .fi-section-costado > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(134 196 150 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-costado .fi-section-header-heading {
+                            color: #f3faf5 !important;
+                        }
+
+                        .dark .fi-section-costado .fi-section-header-description {
+                            color: #c9e6d1 !important;
                         }
 
                         /* Paredes: morado claro, y morado oscuro en modo oscuro */
@@ -396,31 +474,31 @@ class AdminPanelProvider extends PanelProvider
                             color: #f0d2bc !important;
                         }
 
-                        /* Cálculo de cortes: amarillo claro, y ámbar oscuro en modo oscuro */
+                        /* Cálculo de cortes: gris claro, y gris oscuro en modo oscuro */
                         .fi-section-cuts > .fi-section:not(.fi-aside) {
-                            background-color: #fff4cc !important;
-                            --tw-ring-color: rgb(202 160 48 / 0.55) !important;
+                            background-color: #e8eaed !important;
+                            --tw-ring-color: rgb(156 163 175 / 0.7) !important;
                         }
 
                         .fi-section-cuts > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
-                            border-top-color: #ead48a !important;
+                            border-top-color: #d1d5db !important;
                         }
 
                         .dark .fi-section-cuts > .fi-section:not(.fi-aside) {
-                            background-color: #3f3414 !important;
-                            --tw-ring-color: rgb(214 176 70 / 0.4) !important;
+                            background-color: #3a4150 !important;
+                            --tw-ring-color: rgb(186 196 210 / 0.35) !important;
                         }
 
                         .dark .fi-section-cuts > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
-                            border-top-color: rgb(214 176 70 / 0.35) !important;
+                            border-top-color: rgb(186 196 210 / 0.28) !important;
                         }
 
                         .dark .fi-section-cuts .fi-section-header-heading {
-                            color: #fff8e8 !important;
+                            color: #f4f6f8 !important;
                         }
 
                         .dark .fi-section-cuts .fi-section-header-description {
-                            color: #f0e2b8 !important;
+                            color: #d5dbe3 !important;
                         }
                     </style>
                 BLADE),

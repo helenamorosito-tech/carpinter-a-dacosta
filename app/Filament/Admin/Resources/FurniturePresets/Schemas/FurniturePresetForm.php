@@ -332,6 +332,7 @@ class FurniturePresetForm
                                         ->afterStateUpdated(fn (Get $get, Set $set) => self::syncAdditionalShelfDefaults($get, $set)),
                                 ]),
                             Section::make('Costado visto')
+                                ->extraAttributes(['class' => 'fi-section-costado'])
                                 ->visible(fn (Get $get): bool => self::isCostadoVisto($get('side_type')))
                                 ->columns(4)
                                 ->schema([
@@ -658,7 +659,9 @@ class FurniturePresetForm
                                             );
                                         }),
                                 ]),
-                            Section::make('Mecanizados')
+                            Section::make(function (Get $get): HtmlString {
+                                return self::shelfCountBadge('Mecanizados', self::machiningCount($get), 'machining');
+                            })
                                 ->extraAttributes(['class' => 'fi-section-machining'])
                                 ->collapsed()
                                 ->description('Herrajes y taladros de la ficha. Si dejas la cantidad vacía, se calcula. Abajo puedes añadir otros, con nombre y posición.')
@@ -708,6 +711,7 @@ class FurniturePresetForm
                                         ->defaultItems(0)
                                         ->addActionLabel('Agregar mecanizado')
                                         ->reorderable()
+                                        ->live()
                                         ->columnSpanFull()
                                         ->columns(2)
                                         ->itemLabel(fn (array $state): ?string => filled($state['name'] ?? null) ? (string) $state['name'] : null)
@@ -716,6 +720,7 @@ class FurniturePresetForm
                                                 ->label('Nombre')
                                                 ->required()
                                                 ->maxLength(80)
+                                                ->live(onBlur: true)
                                                 ->placeholder('Bisagra'),
                                             TextInput::make('position')
                                                 ->label('Posición')
@@ -724,6 +729,7 @@ class FurniturePresetForm
                                                 ->placeholder('80 mm desde el canto superior del lateral'),
                                         ]),
                                     Fieldset::make('Posiciones del mecanizado')
+                                        ->extraAttributes(['class' => 'fi-fieldset-positions'])
                                         ->columnSpanFull()
                                         ->columns(4)
                                         ->schema([
@@ -833,6 +839,7 @@ class FurniturePresetForm
                                         }),
                                 ]),
                             Section::make('Plan de corte y ficha técnica')
+                                ->extraAttributes(['class' => 'fi-section-plan'])
                                 ->collapsible()
                                 ->description('El plan de corte lista tableros y sobrantes. La ficha técnica lleva el despiece en milímetros, el alzado del mueble a la derecha y la hoja de mecanizados.')
                                 ->schema([
@@ -1131,5 +1138,19 @@ class FurniturePresetForm
 
         // Siempre incluye la balda maletero.
         return 1 + $additionalCount;
+    }
+
+    protected static function machiningCount(Get $get): int
+    {
+        $selected = $get('configuration.machining');
+        $selected = is_array($selected) ? $selected : MachiningOptions::defaults();
+        $known = array_intersect(
+            array_map('strval', $selected),
+            array_keys(MachiningOptions::options()),
+        );
+
+        return count($known) + count(MachiningOptions::extras([
+            'machining_extra' => $get('configuration.machining_extra'),
+        ]));
     }
 }
