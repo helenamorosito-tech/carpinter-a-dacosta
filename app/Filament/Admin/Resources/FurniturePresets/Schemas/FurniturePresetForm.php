@@ -683,6 +683,71 @@ class FurniturePresetForm
                                             true,
                                         )),
                                 ]),
+                            Section::make('Posiciones del mecanizado')
+                                ->description('Distancias en milímetros desde el canto de la pieza. Si un campo queda vacío, el dibujo mantiene la posición esquemática. El cálculo automático se cierra cuando el cliente confirme cómo se miden.')
+                                ->columns(4)
+                                ->collapsed()
+                                ->schema([
+                                    TextInput::make('configuration.machining_positions.corner_x_mm')
+                                        ->label('Esquina, lado largo')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm'),
+                                    TextInput::make('configuration.machining_positions.corner_y_mm')
+                                        ->label('Esquina, lado corto')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm'),
+                                    TextInput::make('configuration.machining_positions.lateral_pins')
+                                        ->label('Agujeros del lateral')
+                                        ->numeric()
+                                        ->minValue(2)
+                                        ->default(6),
+                                    TextInput::make('configuration.machining_positions.division_pins')
+                                        ->label('Agujeros de la división')
+                                        ->numeric()
+                                        ->minValue(2)
+                                        ->default(8),
+                                    TextInput::make('configuration.machining_positions.pin_start_mm')
+                                        ->label('Primer agujero')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm')
+                                        ->helperText('Desde el canto superior'),
+                                    TextInput::make('configuration.machining_positions.pin_step_mm')
+                                        ->label('Paso entre agujeros')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm'),
+                                    TextInput::make('configuration.machining_positions.maletero_1_mm')
+                                        ->label('Maletero, agujero 1')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm'),
+                                    TextInput::make('configuration.machining_positions.maletero_2_mm')
+                                        ->label('Maletero, agujero 2')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm'),
+                                    TextInput::make('configuration.machining_positions.maletero_3_mm')
+                                        ->label('Maletero, agujero 3')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm'),
+                                    TextInput::make('configuration.machining_positions.maletero_half_mm')
+                                        ->label('Marca 1/2 desde el extremo')
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->step(1)
+                                        ->suffix('mm'),
+                                ]),
                             Section::make('Cálculo de cortes')
                                 ->collapsible()
                                 ->description('Plan de cortes, aprovechamiento de sobrantes del almacén (S-XX) y tableros nuevos necesarios.')

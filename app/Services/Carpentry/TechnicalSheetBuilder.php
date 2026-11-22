@@ -68,7 +68,10 @@ class TechnicalSheetBuilder
             : '';
 
         $diagrams = $this->diagramsFor($parts, $machining);
-        $machiningImage = $this->machiningDiagrams->generateDataUri($diagrams);
+        $machiningImage = $this->machiningDiagrams->generateDataUri(
+            $diagrams,
+            MachiningOptions::positions($configuration),
+        );
 
         $openingHeightMm = $this->mm(((float) ($formData['opening_height_m'] ?? 0)) * 100);
         $openingWidthMm = $this->mm(((float) ($formData['opening_width_m'] ?? 0)) * 100);

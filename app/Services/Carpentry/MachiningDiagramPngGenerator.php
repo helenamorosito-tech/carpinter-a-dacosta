@@ -7,19 +7,19 @@ class MachiningDiagramPngGenerator
     /**
      * @param  list<array{kind: string, label: string, width_mm: int, height_mm: int}>  $diagrams
      */
-    public function generateDataUri(array $diagrams): string
+    public function generateDataUri(array $diagrams, array $positions = []): string
     {
         if ($diagrams === []) {
             return '';
         }
 
-        return 'data:image/png;base64,'.base64_encode($this->generateBinary($diagrams));
+        return 'data:image/png;base64,'.base64_encode($this->generateBinary($diagrams, $positions));
     }
 
     /**
      * @param  list<array{kind: string, label: string, width_mm: int, height_mm: int}>  $diagrams
      */
-    public function generateBinary(array $diagrams): string
+    public function generateBinary(array $diagrams, array $positions = []): string
     {
         $vertical = [];
         $horizontal = [];
@@ -71,7 +71,8 @@ class MachiningDiagramPngGenerator
                     $boardY,
                     $item['board_w'],
                     $item['board_h'],
-                    (string) $item['diagram']['kind'],
+                    $item['diagram'],
+                    $positions,
                     $ink,
                     $labelColor,
                 );
@@ -186,14 +187,26 @@ class MachiningDiagramPngGenerator
         return ['items' => $prepared, 'height' => $rowH, 'width' => $rowW];
     }
 
-    private function drawBoard($image, int $x, int $y, int $w, int $h, string $kind, int $ink, int $accent): void
+    /**
+     * @param  array{kind?: string, width_mm?: int, height_mm?: int}  $diagram
+     * @param  array<string, mixed>  $positions
+     */
+    private function drawBoard($image, int $x, int $y, int $w, int $h, array $diagram, array $positions, int $ink, int $accent): void
     {
+        $kind = (string) ($diagram['kind'] ?? '');
+        $widthMm = max(1.0, (float) ($diagram['width_mm'] ?? 0));
+        $heightMm = max(1.0, (float) ($diagram['height_mm'] ?? 0));
+        $scaleX = $w / $widthMm;
+        $scaleY = $h / $heightMm;
+
         imagesetthickness($image, 2);
         imagerectangle($image, $x, $y, $x + $w, $y + $h, $ink);
         imagesetthickness($image, 1);
 
-        $insetX = max(6, (int) round($w * 0.08));
-        $insetY = max(6, (int) round($h * 0.06));
+        $insetX = $this->along($positions['corner_x_mm'] ?? null, $scaleX)
+            ?? max(6, (int) round($w * 0.08));
+        $insetY = $this->along($positions['corner_y_mm'] ?? null, $scaleY)
+            ?? max(6, (int) round($h * 0.06));
 
         $this->hole($image, $x + $insetX, $y + $insetY, $ink);
         $this->hole($image, $x + $w - $insetX, $y + $insetY, $ink);
@@ -203,10 +216,29 @@ class MachiningDiagramPngGenerator
         if ($kind === 'lateral' || $kind === 'division') {
             $this->hole($image, $x + (int) ($w / 2), $y + $insetY, $ink);
             $this->hole($image, $x + (int) ($w / 2), $y + $h - $insetY, $ink);
-            $pins = $kind === 'division' ? 8 : 6;
+            $pins = $kind === 'division'
+                ? max(2, (int) ($positions['division_pins'] ?? 8))
+                : max(2, (int) ($positions['lateral_pins'] ?? 6));
+            $columns = $kind === 'division' ? [0.38, 0.62] : [0.5];
+            $start = $positions['pin_start_mm'] ?? null;
+            $step = $positions['pin_step_mm'] ?? null;
+
+            if ($start !== null && $step !== null) {
+                for ($i = 0; $i < $pins; $i++) {
+                    $py = $y + (int) round((((float) $start) + ($i * (float) $step)) * $scaleY);
+                    if ($py <= $y + 4 || $py >= $y + $h - 4) {
+                        continue;
+                    }
+                    foreach ($columns as $column) {
+                        $this->hole($image, $x + (int) round($w * $column), $py, $ink);
+                    }
+                }
+
+                return;
+            }
+
             $top = $y + (int) round($h * 0.18);
             $bottom = $y + (int) round($h * 0.82);
-            $columns = $kind === 'division' ? [0.38, 0.62] : [0.5];
 
             for ($i = 0; $i < $pins; $i++) {
                 $py = $top + (int) round(($bottom - $top) * $i / max(1, $pins - 1));
@@ -234,13 +266,33 @@ class MachiningDiagramPngGenerator
 
         if ($kind === 'maletero') {
             $cx = $x + (int) ($w / 2);
-            $this->hole($image, $cx, $y + (int) round($h * 0.3), $ink);
-            $this->hole($image, $cx, $y + (int) round($h * 0.5), $ink);
-            $this->hole($image, $cx, $y + (int) round($h * 0.7), $ink);
+            $offsets = array_values(array_filter([
+                $positions['maletero_1_mm'] ?? null,
+                $positions['maletero_2_mm'] ?? null,
+                $positions['maletero_3_mm'] ?? null,
+            ], fn (mixed $value): bool => $value !== null));
+
+            if ($offsets !== []) {
+                foreach ($offsets as $offset) {
+                    $py = $y + (int) round(((float) $offset) * $scaleY);
+                    if ($py > $y + 4 && $py < $y + $h - 4) {
+                        $this->hole($image, $cx, $py, $ink);
+                    }
+                }
+            } else {
+                $this->hole($image, $cx, $y + (int) round($h * 0.3), $ink);
+                $this->hole($image, $cx, $y + (int) round($h * 0.5), $ink);
+                $this->hole($image, $cx, $y + (int) round($h * 0.7), $ink);
+            }
 
             $markY = $y + $h + 8;
-            $left = $x + (int) round($w * 0.33);
-            $right = $x + (int) round($w * 0.67);
+            $half = $positions['maletero_half_mm'] ?? null;
+            $left = $half !== null
+                ? $x + (int) round(((float) $half) * $scaleX)
+                : $x + (int) round($w * 0.33);
+            $right = $half !== null
+                ? $x + $w - (int) round(((float) $half) * $scaleX)
+                : $x + (int) round($w * 0.67);
             imageline($image, $left, $markY, $left, $markY + 12, $accent);
             imageline($image, $right, $markY, $right, $markY + 12, $accent);
             $half = '1/2';
@@ -257,5 +309,14 @@ class MachiningDiagramPngGenerator
     private function hole($image, int $x, int $y, int $color): void
     {
         imagefilledellipse($image, $x, $y, 7, 7, $color);
+    }
+
+    private function along(mixed $millimetres, float $scale): ?int
+    {
+        if ($millimetres === null || $millimetres === '') {
+            return null;
+        }
+
+        return max(4, (int) round(((float) $millimetres) * $scale));
     }
 }

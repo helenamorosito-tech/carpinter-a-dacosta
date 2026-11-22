@@ -5,6 +5,7 @@ namespace App\Services\Carpentry;
 use App\Enums\PlacementType;
 use App\Models\FurniturePreset;
 use App\Support\BoardMaterialOptions;
+use App\Support\MachiningOptions;
 use App\Support\MeasureFormat;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
@@ -564,7 +565,10 @@ class PresetCutSheetPdfGenerator
             'cutPlan' => $cutPlan,
             'svg' => $svg,
             'elevation' => $this->elevationDataUri($formData, $configuration, $pieces),
-            'machiningImage' => $this->machining->generateDataUri($this->machiningDiagrams($pieces)),
+            'machiningImage' => $this->machining->generateDataUri(
+                $this->machiningDiagrams($pieces),
+                MachiningOptions::positions(is_array($configuration) ? $configuration : []),
+            ),
             'structureBoardPages' => array_chunk($structureDiagrams, 1),
             'backBoardPages' => array_chunk($backDiagrams, 1),
             'cutDiagramPages' => $this->cutDiagramPages($structureDiagrams, $backDiagrams, $structureThickness, $backThickness),

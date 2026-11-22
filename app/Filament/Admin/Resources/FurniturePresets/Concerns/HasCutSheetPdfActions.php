@@ -47,6 +47,7 @@ trait HasCutSheetPdfActions
                 'drawer_depth_cm' => $get('configuration.drawer_depth_cm'),
                 'shelf_depth_cm' => $get('configuration.shelf_depth_cm'),
                 'machining' => $get('configuration.machining') ?? MachiningOptions::defaults(),
+                'machining_positions' => $get('configuration.machining_positions') ?? [],
                 'machining_portabaldas_qty' => $get('configuration.machining_portabaldas_qty'),
                 'machining_soporte_lateral_qty' => $get('configuration.machining_soporte_lateral_qty'),
                 'machining_suplemento_height_cm' => $get('configuration.machining_suplemento_height_cm'),

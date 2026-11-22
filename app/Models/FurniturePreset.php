@@ -139,6 +139,10 @@ class FurniturePreset extends Model
             'costado_visto_derecha' => false,
             'lateral_interior_depths_cm' => [],
             'machining' => MachiningOptions::defaults(),
+            'machining_positions' => [
+                'lateral_pins' => 6,
+                'division_pins' => 8,
+            ],
             'machining_portabaldas_qty' => null,
             'machining_soporte_lateral_qty' => null,
             'machining_suplemento_height_cm' => 6,
