@@ -327,13 +327,11 @@ class FurnitureElevationPngGenerator
                 [
                     'x' => (int) $drawer['zone_x'],
                     'w' => (int) $drawer['zone_w'],
-                    'open_x' => $inner['x'],
-                    'open_w' => $inner['w'],
                 ],
+                $inner,
                 $bottom,
                 $inner['rail'],
                 max(0, (int) ($drawers['count'] ?? 0)),
-                (float) ($drawers['width_cm'] ?? 0),
                 (float) ($drawers['height_cm'] ?? 0),
                 max(0.01, $inner['px']),
                 $ink,
@@ -371,6 +369,7 @@ class FurnitureElevationPngGenerator
             $width = (float) ($shelf['width_cm'] ?? 0);
             if ($this->spanIsFull($width, $innerCm)) {
                 $fullShelves++;
+
                 continue;
             }
             $shelfGroups[$this->bayIndex($width, $bays)]++;
@@ -380,16 +379,15 @@ class FurnitureElevationPngGenerator
         $drawerX = 0;
         $drawerSpan = 0;
         if ($count > 0 && $zone['w'] > 0) {
-            $gap = max(2, (int) round(0.4 * $px));
+            $lip = $this->drawerLip($inner);
             $frontH = max(6, (int) round(($drawerHeight > 0 ? $drawerHeight : 16) * $px));
             $available = $bottom - $inner['rail'] - 8;
-            $needed = ($count * $frontH) + (max(0, $count - 1) * $gap);
+            $needed = $count * ($frontH + $lip['sy']);
             if ($needed > $available) {
-                $frontH = max(5, (int) floor(($available - (max(0, $count - 1) * $gap)) / $count));
+                $frontH = max(5, (int) floor(($available - ($count * $lip['sy'])) / $count));
             }
-            $drawerTop = $bottom - (($count * $frontH) + (max(0, $count - 1) * $gap));
-            $drawerSpan = $drawerWidth > 0 ? (int) round($drawerWidth * $px) : $zone['w'];
-            $placed = $this->placeFront($zone['x'], $zone['w'], $drawerSpan, $inner);
+            $drawerTop = $bottom - ($count * ($frontH + $lip['sy']));
+            $placed = $this->compartmentSpan($zone, $inner);
             $drawerX = $placed['x'];
             $drawerSpan = $placed['w'];
         }
@@ -479,73 +477,101 @@ class FurnitureElevationPngGenerator
     }
 
     /**
+     * El frente ocupa el hueco de lado a lado. El canto superior y el costado
+     * derecho siguen el mismo ángulo que el mueble.
+     *
      * @param  array{x: int, w: int}  $zone
+     * @param  array{x: int, w: int, dx?: int, dy?: int, outer_x?: int, outer_w?: int}  $inner
      */
     private function drawDrawerStack(
         $image,
         array $zone,
+        array $inner,
         int $bottom,
         int $rail,
         int $count,
-        float $widthCm,
         float $heightCm,
         float $px,
         int $ink,
     ): int {
-        $gap = max(2, (int) round(0.4 * $px));
-        $frontH = max(6, (int) round($heightCm * $px));
-        $frontW = $widthCm > 0 ? (int) round($widthCm * $px) : $zone['w'];
-        $placed = $this->placeFront($zone['x'], $zone['w'], $frontW, [
-            'x' => (int) ($zone['open_x'] ?? $zone['x']),
-            'w' => (int) ($zone['open_w'] ?? $zone['w']),
-        ]);
-        $frontW = $placed['w'];
+        $placed = $this->compartmentSpan($zone, $inner);
         $x = $placed['x'];
+        $frontW = $placed['w'];
+        $lip = $this->drawerLip($inner);
+        $sy = $lip['sy'];
+        $outerRight = (int) ($inner['outer_x'] ?? $x) + (int) ($inner['outer_w'] ?? ($frontW + $lip['sx']));
+        $sx = max(3, min($lip['sx'], $outerRight - ($x + $frontW) - 1));
+        $gap = $sy;
+        $frontH = max(6, (int) round($heightCm * $px));
         $available = $bottom - $rail - 8;
-        $needed = ($count * $frontH) + (max(0, $count - 1) * $gap);
+        $needed = ($count * $frontH) + ($count * $gap);
 
         if ($needed > $available && $count > 0) {
-            $frontH = max(5, (int) floor(($available - (max(0, $count - 1) * $gap)) / $count));
+            $frontH = max(5, (int) floor(($available - ($count * $gap)) / $count));
         }
 
+        $paper = imagecolorallocate($image, 255, 255, 255);
+        $side = imagecolorallocate($image, 176, 176, 176);
+        $cap = imagecolorallocate($image, 228, 228, 228);
         $top = $bottom;
 
         for ($index = 0; $index < $count; $index++) {
             $y2 = $bottom - ($index * ($frontH + $gap));
             $y1 = $y2 - $frontH;
-            if ($y1 <= $rail + 2) {
+            if ($y1 - $sy <= $rail + 1) {
                 break;
             }
-            $paper = imagecolorallocate($image, 255, 255, 255);
             imagefilledrectangle($image, $x, $y1, $x + $frontW, $y2, $paper);
+            $this->fillQuad($image, [
+                [$x + $frontW, $y1],
+                [$x + $frontW + $sx, $y1 - $sy],
+                [$x + $frontW + $sx, $y2 - $sy],
+                [$x + $frontW, $y2],
+            ], $side, $ink);
+            $this->fillQuad($image, [
+                [$x, $y1],
+                [$x + $frontW, $y1],
+                [$x + $frontW + $sx, $y1 - $sy],
+                [$x + $sx, $y1 - $sy],
+            ], $cap, $ink);
             imagerectangle($image, $x, $y1, $x + $frontW, $y2, $ink);
             $mid = (int) (($y1 + $y2) / 2);
             $handle = max(6, (int) round($frontW * 0.12));
             imageline($image, $x + (int) ($frontW / 2) - $handle, $mid, $x + (int) ($frontW / 2) + $handle, $mid, $ink);
-            $top = $y1;
+            $top = $y1 - $sy;
         }
 
         return $top;
     }
 
     /**
+     * @param  array{dx?: int, dy?: int}  $inner
+     * @return array{sx: int, sy: int}
+     */
+    private function drawerLip(array $inner): array
+    {
+        $dx = max(1, (int) ($inner['dx'] ?? 12));
+        $dy = max(1, (int) ($inner['dy'] ?? 6));
+
+        return [
+            'sx' => max(4, (int) round($dx * 0.28)),
+            'sy' => max(3, (int) round($dy * 0.28)),
+        ];
+    }
+
+    /**
+     * @param  array{x: int, w: int}  $zone
      * @param  array{x: int, w: int}  $opening
      * @return array{x: int, w: int}
      */
-    private function placeFront(int $zoneX, int $zoneW, int $frontW, array $opening): array
+    private function compartmentSpan(array $zone, array $opening): array
     {
-        $openL = (int) $opening['x'] + 1;
-        $openR = $openL + max(8, (int) $opening['w']) - 2;
-        $frontW = max(8, min($frontW, $openR - $openL));
-        $x = $zoneX + (int) (($zoneW - $frontW) / 2);
-        if ($x < $openL) {
-            $x = $openL;
-        }
-        if ($x + $frontW > $openR) {
-            $x = $openR - $frontW;
-        }
+        $openL = (int) $opening['x'];
+        $openR = $openL + (int) $opening['w'];
+        $left = max($openL, (int) $zone['x']);
+        $right = min($openR, (int) $zone['x'] + (int) $zone['w']);
 
-        return ['x' => $x, 'w' => $frontW];
+        return ['x' => $left, 'w' => max(8, $right - $left)];
     }
 
     /**
@@ -610,7 +636,7 @@ class FurnitureElevationPngGenerator
                 $widest = $index;
                 $widestCm = $bay['cm'];
             }
-            if ($bay['cm'] + 1.5 >= $widthCm && $bay['cm'] < $fitCm) {
+            if ($widthCm <= $bay['cm'] + 1.5 && $bay['cm'] < $fitCm) {
                 $fit = $index;
                 $fitCm = $bay['cm'];
             }
