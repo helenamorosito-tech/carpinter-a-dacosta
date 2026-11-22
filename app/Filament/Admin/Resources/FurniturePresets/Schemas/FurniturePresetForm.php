@@ -380,6 +380,7 @@ class FurniturePresetForm
                         ->schema([
                             self::furnitureTypeBanner(withTotalShelves: true),
                             Section::make('Balda maletero')
+                                ->extraAttributes(['class' => 'fi-section-trunk'])
                                 ->columns(4)
                                 ->collapsed()
                                 ->description('Arriba del hueco. Por defecto: ancho global − 6,5 cm y fondo global − 9 cm.')
@@ -418,6 +419,7 @@ class FurniturePresetForm
                                         ->live(),
                                 ]),
                             Section::make('Baldas')
+                                ->extraAttributes(['class' => 'fi-section-shelves'])
                                 ->collapsed()
                                 ->description('Cada balda en su fila: ancho, fondo y tablero. Por defecto, ancho global − 13 cm y fondo global − 9 cm.')
                                 ->schema([
@@ -498,6 +500,7 @@ class FurniturePresetForm
                                 ->default(1)
                                 ->dehydrated(),
                             Section::make('Cajones y barra')
+                                ->collapsed()
                                 ->columns(4)
                                 ->schema([
                                     TextInput::make('configuration.drawers_count')

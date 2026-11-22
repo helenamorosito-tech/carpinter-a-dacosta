@@ -198,6 +198,60 @@ class AdminPanelProvider extends PanelProvider
                         .dark .fi-section-furniture-type .fi-section-header-heading .fi-furniture-type-selected {
                             color: #ffe08a !important;
                         }
+
+                        /* Balda maletero: gris claro, y gris más claro que el fondo en modo oscuro */
+                        .fi-section-trunk > .fi-section:not(.fi-aside) {
+                            background-color: #e8eaed !important;
+                            --tw-ring-color: rgb(156 163 175 / 0.7) !important;
+                        }
+
+                        .fi-section-trunk > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #d1d5db !important;
+                        }
+
+                        .dark .fi-section-trunk > .fi-section:not(.fi-aside) {
+                            background-color: #3a4150 !important;
+                            --tw-ring-color: rgb(186 196 210 / 0.35) !important;
+                        }
+
+                        .dark .fi-section-trunk > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(186 196 210 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-trunk .fi-section-header-heading {
+                            color: #f4f6f8 !important;
+                        }
+
+                        .dark .fi-section-trunk .fi-section-header-description {
+                            color: #d5dbe3 !important;
+                        }
+
+                        /* Baldas: verde claro, y verde oscuro en modo oscuro */
+                        .fi-section-shelves > .fi-section:not(.fi-aside) {
+                            background-color: #e5f6e8 !important;
+                            --tw-ring-color: rgb(110 176 122 / 0.55) !important;
+                        }
+
+                        .fi-section-shelves > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #b7dfc0 !important;
+                        }
+
+                        .dark .fi-section-shelves > .fi-section:not(.fi-aside) {
+                            background-color: #1a3a28 !important;
+                            --tw-ring-color: rgb(134 196 150 / 0.38) !important;
+                        }
+
+                        .dark .fi-section-shelves > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(134 196 150 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-shelves .fi-section-header-heading {
+                            color: #f3faf5 !important;
+                        }
+
+                        .dark .fi-section-shelves .fi-section-header-description {
+                            color: #c9e6d1 !important;
+                        }
                     </style>
                 BLADE),
             )
