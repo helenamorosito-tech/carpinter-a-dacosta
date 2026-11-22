@@ -136,6 +136,13 @@
         table.data.compact td.measure {
             font-weight: bold;
         }
+        table.sheet-split { width: 100%; border-collapse: collapse; margin-top: 2px; }
+        table.sheet-split td { vertical-align: top; }
+        td.sheet-main { width: 60%; padding-right: 8px; }
+        td.sheet-draw { width: 40%; text-align: center; }
+        td.sheet-main table.boards-list { width: 100%; }
+        .sheet-draw .caption { display: block; font-size: 8px; font-weight: bold; margin: 10px 0 6px; }
+        .sheet-draw img { width: 62mm; height: auto; }
         table.boards-list { margin-top: 4px; table-layout: fixed; }
         table.boards-list th, table.boards-list td {
             padding: 2px 3px;
@@ -336,6 +343,9 @@
         </tr>
     </table>
 
+    <table class="sheet-split">
+        <tr>
+            <td class="sheet-main">
     <h2>2. Materiales seleccionados</h2>
     @if(count($materials))
         <p style="margin:0 0 6px;"><strong>Material:</strong> {{ implode(' · ', $materials) }}</p>
@@ -422,7 +432,17 @@
         | Usada {{ measure_format($totals['used_area_cm2']) }} cm²
         | Desp. {{ measure_format($totals['waste_area_cm2']) }} cm²
     </div>
+            </td>
+            <td class="sheet-draw">
+                @if(!empty($elevation))
+                    <div class="caption">ALZADO DEL MUEBLE</div>
+                    <img src="{{ $elevation }}" alt="Alzado del mueble">
+                @endif
+            </td>
+        </tr>
+    </table>
 
+    <div class="page-break">
     <h2>4. Piezas a usar (con medidas)</h2>
     <table class="data pieces-list">
         <thead>
@@ -451,7 +471,6 @@
         </tbody>
     </table>
 
-    <div class="page-break">
         <h2 class="section-tight">5. Piezas sobrantes / remanentes</h2>
         <table class="data remnants-list">
             <thead>

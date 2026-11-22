@@ -21,6 +21,7 @@ class PresetCutSheetPdfGenerator
         private PresetCutCalculator $calculator,
         private CutDiagramSvgGenerator $svgGenerator,
         private CutDiagramPngGenerator $pngGenerator,
+        private FurnitureElevationPngGenerator $elevation,
     ) {}
 
     /**
@@ -197,6 +198,56 @@ class PresetCutSheetPdfGenerator
             Pdf::loadView('pdf.preset-cut-sheet', $payload)->setPaper('a4', 'portrait'),
             (string) ($payload['furnitureType'] ?? '—'),
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $formData
+     * @param  array<string, mixed>  $configuration
+     * @param  list<array<string, mixed>>  $pieces
+     */
+    private function elevationDataUri(array $formData, array $configuration, array $pieces): string
+    {
+        $heightCm = (float) ($formData['global_height_cm'] ?? 0);
+        $widthCm = (float) ($formData['global_width_cm'] ?? 0);
+
+        if ($heightCm <= 0 || $widthCm <= 0) {
+            return '';
+        }
+
+        $type = FurnitureTypeCatalog::resolve($formData['furniture_type'] ?? null);
+        $doorCount = (int) ($type['door_count'] ?? 0);
+        $modules = max(1, (int) ($configuration['module_count'] ?? 1));
+        $laterals = is_array($configuration['interior_laterals'] ?? null)
+            ? count($configuration['interior_laterals'])
+            : 0;
+        $verticals = $modules === 1
+            ? max(0, max($doorCount - 1, $laterals))
+            : max(0, (int) round($doorCount / $modules) - 1);
+
+        $hasTrunk = (float) ($configuration['trunk_shelf_length_cm'] ?? 0) > 0;
+        if (! $hasTrunk) {
+            foreach ($pieces as $piece) {
+                if (str_starts_with((string) ($piece['label'] ?? ''), 'Balda maletero')) {
+                    $hasTrunk = true;
+                    break;
+                }
+            }
+        }
+
+        $moduleWidths = [];
+        for ($index = 0; $index < $modules; $index++) {
+            $moduleWidths[] = (int) round(($widthCm / $modules) * 10);
+        }
+
+        return $this->elevation->generateDataUri([
+            'height_cm' => $heightCm,
+            'width_cm' => $widthCm,
+            'modules' => $modules,
+            'verticals' => $verticals,
+            'has_trunk' => $hasTrunk,
+            'hanging_bars' => max(0, (int) ($configuration['hanging_bars_count'] ?? 0)),
+            'module_widths_mm' => $moduleWidths,
+        ]);
     }
 
     /**
@@ -445,6 +496,7 @@ class PresetCutSheetPdfGenerator
             'hangingBars' => $this->buildHangingBars($configuration),
             'cutPlan' => $cutPlan,
             'svg' => $svg,
+            'elevation' => $this->elevationDataUri($formData, $configuration, $pieces),
             'structureBoardPages' => array_chunk($structureDiagrams, 1),
             'backBoardPages' => array_chunk($backDiagrams, 1),
             'totals' => [
