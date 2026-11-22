@@ -172,10 +172,10 @@
             font-weight: bold;
             text-transform: uppercase;
         }
-        table.boards-list .col-n { width: 4%; text-align: center; }
-        table.boards-list .col-use { width: 42%; }
-        table.boards-list .col-type { width: 18%; }
-        table.boards-list .col-size { width: 16%; }
+        table.boards-list .col-n { width: 5%; text-align: center; }
+        table.boards-list .col-use { width: 26%; }
+        table.boards-list .col-type { width: 34%; }
+        table.boards-list .col-size { width: 15%; }
         table.boards-list .col-num { width: 10%; text-align: center; }
         table.boards-list td.piece-use { font-size: 8px; font-weight: bold; }
         .summary.tight { margin-top: 4px; padding: 4px 6px; font-size: 8px; }

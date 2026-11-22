@@ -53,9 +53,10 @@ class FurnitureElevationPngGenerator
 
         $depthCm = max(1.0, (float) ($spec['depth_cm'] ?? ($widthCm * 0.35)));
         $pxPerCm = $cabinetW / $widthCm;
-        $angle = deg2rad(32);
-        $dx = (int) round($depthCm * $pxPerCm * cos($angle));
-        $dy = (int) round($depthCm * $pxPerCm * sin($angle));
+        $angle = deg2rad(24);
+        $depthScale = 0.36;
+        $dx = (int) round($depthCm * $pxPerCm * cos($angle) * $depthScale);
+        $dy = (int) round($depthCm * $pxPerCm * sin($angle) * $depthScale);
 
         $pad = 10;
         $labelH = $modules > 1 ? 42 : 0;
