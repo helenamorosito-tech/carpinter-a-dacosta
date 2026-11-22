@@ -247,6 +247,7 @@ class PresetCutSheetPdfGenerator
             'has_trunk' => $hasTrunk,
             'hanging_bars' => max(0, (int) ($configuration['hanging_bars_count'] ?? 0)),
             'module_widths_mm' => $moduleWidths,
+            'depth_cm' => (float) ($formData['global_depth_cm'] ?? 0),
             'shelves' => $this->elevationShelves($configuration),
             'drawers' => $this->elevationDrawers($configuration),
         ]);

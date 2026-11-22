@@ -65,6 +65,7 @@ class TechnicalSheetBuilder
                 'has_trunk' => $this->hasTrunk($parts),
                 'hanging_bars' => max(0, (int) ($configuration['hanging_bars_count'] ?? 0)),
                 'module_widths_mm' => $moduleWidths,
+                'depth_cm' => $depthCm,
                 'shelves' => $this->elevationShelves($configuration, $widthCm),
                 'drawers' => $this->elevationDrawers($configuration),
             ])

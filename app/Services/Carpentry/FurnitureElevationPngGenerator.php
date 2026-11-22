@@ -51,12 +51,18 @@ class FurnitureElevationPngGenerator
             $cabinetW = max(120, (int) round($cabinetH / $aspect));
         }
 
-        $pad = 8;
+        $depthCm = max(1.0, (float) ($spec['depth_cm'] ?? ($widthCm * 0.35)));
+        $pxPerCm = $cabinetW / $widthCm;
+        $angle = deg2rad(32);
+        $dx = (int) round($depthCm * $pxPerCm * cos($angle));
+        $dy = (int) round($depthCm * $pxPerCm * sin($angle));
+
+        $pad = 10;
         $labelH = $modules > 1 ? 42 : 0;
-        $canvasW = $cabinetW + (2 * $pad);
-        $canvasH = $cabinetH + $labelH + (2 * $pad);
+        $canvasW = $cabinetW + $dx + (2 * $pad);
+        $canvasH = $cabinetH + $dy + $labelH + (2 * $pad);
         $originX = $pad;
-        $originY = $pad;
+        $originY = $pad + $dy;
 
         $image = imagecreatetruecolor($canvasW, $canvasH);
         $white = imagecolorallocate($image, 255, 255, 255);
@@ -76,6 +82,8 @@ class FurnitureElevationPngGenerator
             $ink,
             (bool) ($spec['has_trunk'] ?? true),
             $widthCm,
+            $dx,
+            $dy,
         );
 
         $this->drawModules(
@@ -90,6 +98,8 @@ class FurnitureElevationPngGenerator
             $originY + $cabinetH + 28,
         );
 
+        $this->paintRightSide($image, $originX, $originY, $cabinetW, $cabinetH, $dx, $dy, $ink);
+
         ob_start();
         imagepng($image);
         $binary = ob_get_clean();
@@ -101,7 +111,7 @@ class FurnitureElevationPngGenerator
     /**
      * Marco a escala: el grueso sigue al tablero de 16 mm respecto al ancho real.
      *
-     * @return array{x: int, y: int, w: int, h: int, rail: int}
+     * @return array{x: int, y: int, w: int, h: int, rail: int, px: float, dx: int, dy: int}
      */
     private function drawCabinet(
         $image,
@@ -112,8 +122,12 @@ class FurnitureElevationPngGenerator
         int $ink,
         bool $hasTrunk,
         float $widthCm,
+        int $dx,
+        int $dy,
     ): array {
-        $frame = imagecolorallocate($image, 214, 214, 214);
+        $face = imagecolorallocate($image, 196, 196, 196);
+        $top = imagecolorallocate($image, 214, 214, 214);
+        $side = imagecolorallocate($image, 158, 158, 158);
         $paper = imagecolorallocate($image, 255, 255, 255);
         $pxPerCm = $w / max(1.0, $widthCm);
         $inset = max(4, (int) round(1.6 * $pxPerCm));
@@ -122,7 +136,20 @@ class FurnitureElevationPngGenerator
         $iw = max(8, $w - (2 * $inset));
         $ih = max(8, $h - (2 * $inset));
 
-        imagefilledrectangle($image, $x, $y, $x + $w, $y + $h, $frame);
+        $this->fillQuad($image, [
+            [$x, $y],
+            [$x + $w, $y],
+            [$x + $w + $dx, $y - $dy],
+            [$x + $dx, $y - $dy],
+        ], $top, $ink);
+        $this->fillQuad($image, [
+            [$x + $w, $y],
+            [$x + $w, $y + $h],
+            [$x + $w + $dx, $y + $h - $dy],
+            [$x + $w + $dx, $y - $dy],
+        ], $side, $ink);
+
+        imagefilledrectangle($image, $x, $y, $x + $w, $y + $h, $face);
         imagefilledrectangle($image, $ix, $iy, $ix + $iw, $iy + $ih, $paper);
         imagesetthickness($image, 2);
         imagerectangle($image, $x, $y, $x + $w, $y + $h, $ink);
@@ -131,7 +158,18 @@ class FurnitureElevationPngGenerator
         $railY = $iy;
         if ($hasTrunk) {
             $railY = $iy + (int) round($ih * 0.13);
-            imageline($image, $ix, $railY, $ix + $iw, $railY, $ink);
+            $shelf = $railY + $inset;
+            imagefilledrectangle($image, $ix, $railY, $ix + $iw, $shelf, $face);
+            $sx = (int) round($dx * 0.28);
+            $sy = (int) round($dy * 0.28);
+            $this->fillQuad($image, [
+                [$ix, $railY],
+                [$ix + $iw, $railY],
+                [$ix + $iw + $sx, $railY - $sy],
+                [$ix + $sx, $railY - $sy],
+            ], $top, $ink);
+            imagerectangle($image, $ix, $railY, $ix + $iw, $shelf, $ink);
+            $railY = $shelf;
         }
 
         imagesetthickness($image, 1);
@@ -143,7 +181,35 @@ class FurnitureElevationPngGenerator
             'h' => $ih,
             'rail' => $railY,
             'px' => $pxPerCm,
+            'dx' => $dx,
+            'dy' => $dy,
         ];
+    }
+
+    private function paintRightSide($image, int $x, int $y, int $w, int $h, int $dx, int $dy, int $ink): void
+    {
+        $side = imagecolorallocate($image, 158, 158, 158);
+        $this->fillQuad($image, [
+            [$x + $w, $y],
+            [$x + $w, $y + $h],
+            [$x + $w + $dx, $y + $h - $dy],
+            [$x + $w + $dx, $y - $dy],
+        ], $side, $ink);
+    }
+
+    /**
+     * @param  list<array{0: int, 1: int}>  $points
+     */
+    private function fillQuad($image, array $points, int $fill, int $ink): void
+    {
+        $flat = [];
+        foreach ($points as $point) {
+            $flat[] = $point[0];
+            $flat[] = $point[1];
+        }
+
+        imagefilledpolygon($image, $flat, $fill);
+        imagepolygon($image, $flat, $ink);
     }
 
     /**
@@ -196,9 +262,21 @@ class FurnitureElevationPngGenerator
         imagesetthickness($image, 2);
         foreach ($bays as $index => $bay) {
             $lineBottom = $drawerTop < $bottom && $this->drawersSpanAll($drawers, $inner) ? $drawerTop : $bottom;
+            $board = max(3, (int) round(1.6 * $inner['px']));
+            $sx = (int) round($inner['dx'] * 0.22);
+            $sy = (int) round($inner['dy'] * 0.22);
+            $post = imagecolorallocate($image, 186, 186, 186);
 
             if ($index > 0) {
-                imageline($image, $bay['x'], $inner['rail'], $bay['x'], $lineBottom, $ink);
+                $px1 = $bay['x'] - (int) ($board / 2);
+                imagefilledrectangle($image, $px1, $inner['rail'], $px1 + $board, $lineBottom, $post);
+                $this->fillQuad($image, [
+                    [$px1 + $board, $inner['rail']],
+                    [$px1 + $board + $sx, $inner['rail'] - $sy],
+                    [$px1 + $board + $sx, $lineBottom - $sy],
+                    [$px1 + $board, $lineBottom],
+                ], $post, $ink);
+                imagerectangle($image, $px1, $inner['rail'], $px1 + $board, $lineBottom, $ink);
             }
 
             $lines = max(0, $verticals);
@@ -344,10 +422,12 @@ class FurnitureElevationPngGenerator
             return;
         }
 
-        imagesetthickness($image, 2);
+        $board = max(3, (int) round($w * 0.012));
+        $gray = imagecolorallocate($image, 170, 170, 170);
         for ($index = 1; $index <= $count; $index++) {
             $y = $top + (int) round($span * $index / ($count + 1));
-            imageline($image, $x + 2, $y, $x + $w - 2, $y, $ink);
+            imagefilledrectangle($image, $x + 2, $y, $x + $w - 2, $y + $board, $gray);
+            imagerectangle($image, $x + 2, $y, $x + $w - 2, $y + $board, $ink);
         }
     }
 
