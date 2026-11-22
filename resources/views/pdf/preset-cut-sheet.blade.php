@@ -31,6 +31,8 @@
         .fact-label { font-size: 8px; font-weight: bold; color: #4b5563; line-height: 1.2; }
         .fact-value { font-size: 10px; font-weight: bold; color: #111827; margin-top: 1px; line-height: 1.25; }
         .fact-sub { font-size: 9px; color: #111827; margin-top: 1px; line-height: 1.25; }
+        table.measure-grid { border-collapse: collapse; width: auto; margin: 1px 0 4px; }
+        table.measure-grid > tbody > tr > td { vertical-align: top; padding: 0 14px 6px 0; width: auto; }
         table.measure-box { border-collapse: collapse; margin-top: 2px; }
         table.measure-box th, table.measure-box td {
             border: 1px solid #111827;
@@ -405,6 +407,8 @@
                 </table>
             </td>
         </tr>
+    </table>
+    <table class="measure-grid">
         <tr>
             <td>
                 <div class="fact-label">Hueco</div>
@@ -435,57 +439,61 @@
                         <td>{{ isset($global['depth_cm']) ? measure_format($global['depth_cm']).' cm' : '—' }}</td>
                     </tr>
                 </table>
-                <div class="fact-label fact-follow">Barras de colgar</div>
-                <div class="fact-value">
-                    @if($hangingBarsCount >= 1)
-                        {{ $hangingBarsCount }} {{ $hangingBarsCount === 1 ? 'barra' : 'barras' }}
-                    @else
-                        —
-                    @endif
-                </div>
-                @if($hangingBarsCount >= 1)
-                    <table class="measure-box">
-                        <tr>
-                            <th>Largo</th>
-                        </tr>
-                        <tr>
-                            <td>{{ filled($hangingBarLengthCm) && (float) $hangingBarLengthCm > 0 ? measure_format((float) $hangingBarLengthCm).' cm' : '—' }}</td>
-                        </tr>
-                    </table>
-                @endif
+            </td>
+            <td>
+                <div class="fact-label">Barras de colgar</div>
+                <table class="measure-box">
+                    <tr>
+                        <th>Cant.</th>
+                        <th>Largo</th>
+                    </tr>
+                    <tr>
+                        <td>{{ $hangingBarsCount >= 1 ? $hangingBarsCount : '—' }}</td>
+                        <td>{{ $hangingBarsCount >= 1 && filled($hangingBarLengthCm) && (float) $hangingBarLengthCm > 0 ? measure_format((float) $hangingBarLengthCm).' cm' : '—' }}</td>
+                    </tr>
+                </table>
             </td>
         </tr>
         <tr>
             <td>
                 <div class="fact-label">Tableros</div>
-                <div class="fact-value">{{ $structureBoard['quantity'] ?? 0 }} × {{ $structureBoard['thickness_mm'] ?? 16 }} mm</div>
-                @if(! empty($showBoardBase))
-                    <table class="measure-box">
-                        <tr>
-                            <th>Ancho base</th>
-                            <th>Alto base</th>
-                        </tr>
-                        <tr>
+                <table class="measure-box">
+                    <tr>
+                        <th>Cant.</th>
+                        <th>Grosor</th>
+                        @if(! empty($showBoardBase))
+                            <th>Ancho</th>
+                            <th>Alto</th>
+                        @endif
+                    </tr>
+                    <tr>
+                        <td>{{ $structureBoard['quantity'] ?? 0 }}</td>
+                        <td>{{ $structureBoard['thickness_mm'] ?? 16 }} mm</td>
+                        @if(! empty($showBoardBase))
                             <td>{{ measure_format($boardSize['width_cm']) }} cm</td>
                             <td>{{ measure_format($boardSize['height_cm']) }} cm</td>
-                        </tr>
-                    </table>
-                @endif
+                        @endif
+                    </tr>
+                </table>
             </td>
             <td>
                 <div class="fact-label">Fondo del mueble</div>
-                <div class="fact-value">{{ $backBoard['quantity'] ?? 1 }} × {{ $backBoard['thickness_mm'] ?? 10 }} mm</div>
                 <table class="measure-box">
                     <tr>
+                        <th>Cant.</th>
+                        <th>Grosor</th>
                         <th>Ancho</th>
                         <th>Alto</th>
                     </tr>
                     <tr>
+                        <td>{{ $backBoard['quantity'] ?? 1 }}</td>
+                        <td>{{ $backBoard['thickness_mm'] ?? 10 }} mm</td>
                         <td>{{ isset($global['width_cm']) ? measure_format($global['width_cm']).' cm' : '—' }}</td>
                         <td>{{ isset($global['height_cm']) ? measure_format($global['height_cm']).' cm' : '—' }}</td>
                     </tr>
                 </table>
             </td>
+            <td></td>
         </tr>
     </table>
 
