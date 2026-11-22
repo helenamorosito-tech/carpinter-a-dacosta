@@ -7,16 +7,16 @@ use App\Support\MeasureFormat;
 class CutDiagramPngGenerator
 {
     private const COLORS = [
-        [245, 158, 11],
-        [59, 130, 246],
-        [16, 185, 129],
-        [239, 68, 68],
-        [139, 92, 246],
-        [236, 72, 153],
-        [20, 184, 166],
-        [249, 115, 22],
-        [99, 102, 241],
-        [132, 204, 22],
+        [191, 219, 254],
+        [187, 247, 208],
+        [254, 215, 170],
+        [221, 214, 254],
+        [165, 243, 252],
+        [253, 230, 138],
+        [254, 205, 211],
+        [204, 251, 241],
+        [233, 213, 255],
+        [217, 249, 157],
     ];
 
     /** Tamaño de la etiqueta de pieza (pt). */
@@ -195,8 +195,8 @@ class CutDiagramPngGenerator
         $boardBorder = imagecolorallocate($image, 17, 24, 39);
         $pieceBorder = imagecolorallocate($image, 17, 24, 39);
         $textColor = imagecolorallocate($image, 0, 0, 0);
-        $remnantFill = imagecolorallocate($image, 243, 244, 246);
-        $remnantBorder = imagecolorallocate($image, 75, 85, 99);
+        $remnantFill = imagecolorallocate($image, 209, 213, 219);
+        $remnantBorder = imagecolorallocate($image, 156, 163, 175);
         $remnantText = imagecolorallocate($image, 220, 38, 38);
 
         imagefilledrectangle($image, 0, 0, $imageWidth, (int) $totalHeight, $white);
@@ -242,7 +242,7 @@ class CutDiagramPngGenerator
             foreach ($board['placements'] ?? [] as $placement) {
                 $rgb = self::COLORS[$colorIndex % count(self::COLORS)];
                 $colorIndex++;
-                $fill = imagecolorallocatealpha($image, $rgb[0], $rgb[1], $rgb[2], 40);
+                $fill = imagecolorallocate($image, $rgb[0], $rgb[1], $rgb[2]);
 
                 $x = $originX + ((float) $placement['x'] * $scalePxPerCm);
                 $y = $originY + ((float) $placement['y'] * $scalePxPerCm);

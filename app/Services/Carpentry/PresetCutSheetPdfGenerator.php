@@ -22,6 +22,7 @@ class PresetCutSheetPdfGenerator
         private CutDiagramSvgGenerator $svgGenerator,
         private CutDiagramPngGenerator $pngGenerator,
         private FurnitureElevationPngGenerator $elevation,
+        private MachiningDiagramPngGenerator $machining,
     ) {}
 
     /**
@@ -567,6 +568,7 @@ class PresetCutSheetPdfGenerator
             'cutPlan' => $cutPlan,
             'svg' => $svg,
             'elevation' => $this->elevationDataUri($formData, $configuration, $pieces),
+            'machiningImage' => $this->machining->generateDataUri($this->machiningDiagrams($pieces)),
             'structureBoardPages' => array_chunk($structureDiagrams, 1),
             'backBoardPages' => array_chunk($backDiagrams, 1),
             'cutDiagramPages' => $this->cutDiagramPages($structureDiagrams, $backDiagrams, $structureThickness, $backThickness),
@@ -762,6 +764,109 @@ class PresetCutSheetPdfGenerator
         }
 
         return false;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $pieces
+     * @return list<array{kind: string, label: string, width_mm: int, height_mm: int}>
+     */
+    private function machiningDiagrams(array $pieces): array
+    {
+        $vertical = [];
+        $horizontal = [];
+
+        foreach ($pieces as $piece) {
+            $spec = $this->machiningSpec((string) ($piece['label'] ?? ''));
+            if ($spec === null) {
+                continue;
+            }
+
+            $widthMm = (int) round(((float) ($piece['width_cm'] ?? 0)) * 10);
+            $heightMm = (int) round(((float) ($piece['height_cm'] ?? 0)) * 10);
+            if ($widthMm <= 0 || $heightMm <= 0) {
+                continue;
+            }
+
+            $entry = [
+                'kind' => $spec['kind'],
+                'label' => $spec['label'],
+                'width_mm' => $widthMm,
+                'height_mm' => $heightMm,
+                'quantity' => max(1, (int) ($piece['quantity'] ?? 1)),
+                'sort' => $spec['sort'],
+            ];
+
+            if ($spec['vertical']) {
+                for ($i = 0; $i < $entry['quantity']; $i++) {
+                    $vertical[] = $entry;
+                }
+
+                continue;
+            }
+
+            $horizontal[] = $entry;
+        }
+
+        $grouped = [];
+        foreach ($horizontal as $item) {
+            $key = $item['kind'].'|'.$item['width_mm'].'|'.$item['height_mm'];
+            if (! isset($grouped[$key])) {
+                $grouped[$key] = $item;
+                $grouped[$key]['quantity'] = 0;
+            }
+            $grouped[$key]['quantity'] += $item['quantity'];
+        }
+
+        $horizontal = array_values($grouped);
+        usort($horizontal, fn (array $a, array $b): int => $a['sort'] <=> $b['sort']);
+
+        $diagrams = [];
+
+        foreach ($vertical as $item) {
+            $diagrams[] = [
+                'kind' => $item['kind'],
+                'label' => $item['label'],
+                'width_mm' => $item['width_mm'],
+                'height_mm' => $item['height_mm'],
+            ];
+        }
+
+        foreach ($horizontal as $item) {
+            $label = $item['label'];
+            if ($item['kind'] === 'maletero' || $item['quantity'] > 1) {
+                $label = $item['quantity'].' '.$label;
+            }
+
+            $diagrams[] = [
+                'kind' => $item['kind'],
+                'label' => $label,
+                'width_mm' => $item['width_mm'],
+                'height_mm' => $item['height_mm'],
+            ];
+        }
+
+        return $diagrams;
+    }
+
+    /**
+     * @return array{kind: string, label: string, vertical: bool, sort: int}|null
+     */
+    private function machiningSpec(string $label): ?array
+    {
+        $name = mb_strtolower($label);
+
+        return match (true) {
+            str_contains($name, 'fondo') || str_contains($name, 'puerta') => null,
+            str_contains($name, 'lateral interior') => ['kind' => 'division', 'label' => 'DIVISION', 'vertical' => true, 'sort' => 15],
+            str_contains($name, 'lateral izquierdo') => ['kind' => 'lateral', 'label' => 'LATERAL IZQ', 'vertical' => true, 'sort' => 10],
+            str_contains($name, 'lateral derecho') => ['kind' => 'lateral', 'label' => 'LATERAL DCHO', 'vertical' => true, 'sort' => 11],
+            str_contains($name, 'lateral') => ['kind' => 'lateral', 'label' => 'LATERAL', 'vertical' => true, 'sort' => 12],
+            str_contains($name, 'base') => ['kind' => 'base', 'label' => 'BASE', 'vertical' => false, 'sort' => 20],
+            str_contains($name, 'maletero') => ['kind' => 'maletero', 'label' => 'BALDA MALETERO', 'vertical' => false, 'sort' => 30],
+            str_contains($name, 'balda') => ['kind' => 'balda', 'label' => 'BALDA', 'vertical' => false, 'sort' => 40],
+            str_contains($name, 'techo') => ['kind' => 'techo', 'label' => 'TECHO', 'vertical' => false, 'sort' => 50],
+            default => null,
+        };
     }
 
     /**

@@ -32,37 +32,20 @@ class MachiningDiagramPngGenerator
             }
         }
 
-        $items = array_merge(
-            $this->scaledItems($vertical, 280, 90),
-            $this->scaledItems($horizontal, 130, 240),
-        );
-
-        $canvasW = 860;
+        $canvasW = 980;
         $rows = [];
-        $row = [];
-        $rowW = 0;
-        $rowH = 0;
 
-        foreach ($items as $item) {
-            if ($row !== [] && ($rowW + $item['box_w']) > ($canvasW - 24)) {
-                $rows[] = ['items' => $row, 'height' => $rowH, 'width' => $rowW];
-                $row = [];
-                $rowW = 0;
-                $rowH = 0;
-            }
-
-            $row[] = $item;
-            $rowW += $item['box_w'];
-            $rowH = max($rowH, $item['box_h']);
+        if ($vertical !== []) {
+            $rows[] = $this->packRow($this->scaledItems($vertical, 460, 190), $canvasW);
         }
 
-        if ($row !== []) {
-            $rows[] = ['items' => $row, 'height' => $rowH, 'width' => $rowW];
+        foreach ($horizontal as $diagram) {
+            $rows[] = $this->packRow($this->scaledItems([$diagram], 230, 760), $canvasW);
         }
 
-        $canvasH = 16;
+        $canvasH = 12;
         foreach ($rows as $packed) {
-            $canvasH += $packed['height'] + 18;
+            $canvasH += $packed['height'] + 22;
         }
 
         $image = imagecreatetruecolor($canvasW, max(80, $canvasH));
@@ -75,7 +58,7 @@ class MachiningDiagramPngGenerator
             imageantialias($image, true);
         }
 
-        $y = 10;
+        $y = 8;
         foreach ($rows as $packed) {
             $x = (int) max(8, ($canvasW - $packed['width']) / 2);
 
@@ -94,16 +77,16 @@ class MachiningDiagramPngGenerator
                 );
 
                 $label = (string) $item['diagram']['label'];
-                $size = 12;
+                $size = 14;
                 $textW = DrawingFont::textWidth($label, $size, true);
-                $labelY = $boardY + $item['board_h'] + 18;
+                $labelY = $boardY + $item['board_h'] + 20;
                 if (($item['diagram']['kind'] ?? '') === 'maletero') {
-                    $labelY += 22;
+                    $labelY += 24;
                 }
                 DrawingFont::draw(
                     $image,
                     $size,
-                    $boardX + (int) (($item['board_w'] - $textW) / 2),
+                    $x + (int) (($item['box_w'] - $textW) / 2),
                     $labelY,
                     $label,
                     $labelColor,
@@ -113,7 +96,7 @@ class MachiningDiagramPngGenerator
                 $x += $item['box_w'];
             }
 
-            $y += $packed['height'] + 18;
+            $y += $packed['height'] + 22;
         }
 
         ob_start();
@@ -126,7 +109,7 @@ class MachiningDiagramPngGenerator
 
     /**
      * @param  list<array{kind: string, label: string, width_mm: int, height_mm: int}>  $diagrams
-     * @return list<array{diagram: array{kind: string, label: string, width_mm: int, height_mm: int}, board_w: int, board_h: int, box_w: int, box_h: int}>
+     * @return list<array{diagram: array{kind: string, label: string, width_mm: int, height_mm: int}, board_w: int, board_h: int}>
      */
     private function scaledItems(array $diagrams, int $targetHeight, int $maxWidth): array
     {
@@ -153,17 +136,54 @@ class MachiningDiagramPngGenerator
         foreach ($diagrams as $diagram) {
             $boardW = max(36, (int) round($diagram['width_mm'] * $scale));
             $boardH = max(36, (int) round($diagram['height_mm'] * $scale));
-            $extra = ($diagram['kind'] ?? '') === 'maletero' ? 30 : 0;
             $items[] = [
                 'diagram' => $diagram,
                 'board_w' => $boardW,
                 'board_h' => $boardH,
-                'box_w' => $boardW + 36,
-                'box_h' => $boardH + 40 + $extra,
             ];
         }
 
         return $items;
+    }
+
+    /**
+     * @param  list<array{diagram: array{kind: string, label: string, width_mm: int, height_mm: int}, board_w: int, board_h: int}>  $items
+     * @return array{items: list<array<string, mixed>>, height: int, width: int}
+     */
+    private function packRow(array $items, int $canvasW): array
+    {
+        $prepared = [];
+        $rowW = 0;
+        $rowH = 0;
+
+        foreach ($items as $item) {
+            $label = (string) ($item['diagram']['label'] ?? '');
+            $labelW = DrawingFont::textWidth($label, 14, true);
+            $extra = ($item['diagram']['kind'] ?? '') === 'maletero' ? 34 : 0;
+            $boxW = max($item['board_w'], $labelW) + 32;
+            $boxH = $item['board_h'] + 28 + $extra;
+            $item['box_w'] = $boxW;
+            $item['box_h'] = $boxH;
+            $prepared[] = $item;
+            $rowW += $boxW;
+            $rowH = max($rowH, $boxH);
+        }
+
+        if ($rowW > ($canvasW - 16) && $rowW > 0) {
+            $fit = ($canvasW - 16) / $rowW;
+            $rowW = 0;
+            $rowH = 0;
+            foreach ($prepared as $index => $item) {
+                $prepared[$index]['board_w'] = max(28, (int) round($item['board_w'] * $fit));
+                $prepared[$index]['board_h'] = max(28, (int) round($item['board_h'] * $fit));
+                $prepared[$index]['box_w'] = max($prepared[$index]['board_w'], (int) round(($item['box_w'] - 32) * $fit)) + 32;
+                $prepared[$index]['box_h'] = $prepared[$index]['board_h'] + ($item['box_h'] - $item['board_h']);
+                $rowW += $prepared[$index]['box_w'];
+                $rowH = max($rowH, $prepared[$index]['box_h']);
+            }
+        }
+
+        return ['items' => $prepared, 'height' => $rowH, 'width' => $rowW];
     }
 
     private function drawBoard($image, int $x, int $y, int $w, int $h, string $kind, int $ink, int $accent): void

@@ -126,8 +126,8 @@
         }
         table.data.compact.remnants-table th,
         table.data.remnants-list th {
-            background: #fecaca;
-            color: #7f1d1d;
+            background: #e5e7eb;
+            color: #374151;
             font-weight: bold;
         }
         table.data.remnants-list {
@@ -199,6 +199,17 @@
         .summary.tight { margin-top: 4px; padding: 4px 6px; font-size: 8px; }
         .summary.tight strong { font-size: 8px; }
         h2.tight { margin: 10px 0 4px; }
+        h2.mecanizados {
+            text-align: center;
+            color: #b91c1c;
+            font-size: 16px;
+            margin: 2px 0 6px;
+            border-bottom: none;
+            letter-spacing: 1px;
+            padding-bottom: 0;
+        }
+        .machining { text-align: center; }
+        .machining img { width: 170mm; height: auto; }
         table.pieces-list th, table.pieces-list td { padding: 3px 4px; font-size: 9px; }
         table.pieces-list .col-code { width: 8%; }
         table.pieces-list .col-name { width: 34%; }
@@ -271,11 +282,11 @@
             margin: 8px 0 0;
         }
         .band-pieces { background: #dbeafe; color: #1e40af; }
-        .band-remnants { background: #fee2e2; color: #991b1b; }
+        .band-remnants { background: #e5e7eb; color: #374151; }
         .band-drawers { background: #f3e8ff; color: #6b21a8; }
         .band-bars { background: #ffedd5; color: #9a3412; }
         table.tone-pieces th { background: #dbeafe; color: #1e40af; }
-        table.tone-remnants th { background: #fee2e2; color: #991b1b; }
+        table.tone-remnants th { background: #e5e7eb; color: #374151; }
         table.tone-drawers th { background: #f3e8ff; color: #6b21a8; }
         table.tone-bars th { background: #ffedd5; color: #9a3412; }
         .muted { color: #6b7280; font-size: 10px; }
@@ -564,6 +575,15 @@
             </td>
         </tr>
     </table>
+
+    @if(!empty($machiningImage))
+        <div class="page-break">
+            <h2 class="mecanizados">MECANIZADOS</h2>
+            <div class="machining">
+                <img src="{{ $machiningImage }}" alt="Mecanizados">
+            </div>
+        </div>
+    @endif
 
     <div class="page-break">
         <h2>4. Resumen de tablas</h2>

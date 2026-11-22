@@ -7,8 +7,8 @@ use App\Support\MeasureFormat;
 class CutDiagramSvgGenerator
 {
     private const COLORS = [
-        '#F59E0B', '#3B82F6', '#10B981', '#EF4444', '#8B5CF6',
-        '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16',
+        '#BFDBFE', '#BBF7D0', '#FED7AA', '#DDD6FE', '#A5F3FC',
+        '#FDE68A', '#FECDD3', '#CCFBF1', '#E9D5FF', '#D9F99D',
     ];
 
     /**
@@ -75,7 +75,7 @@ class CutDiagramSvgGenerator
                 $h = $placement['height'] * $scalePxPerCm;
 
                 $elements[] = sprintf(
-                    '<rect x="%d" y="%d" width="%d" height="%d" fill="%s" fill-opacity="0.75" stroke="#111827" stroke-width="1.5"/>',
+                    '<rect x="%d" y="%d" width="%d" height="%d" fill="%s" stroke="#111827" stroke-width="1.5"/>',
                     (int) $x,
                     (int) $y,
                     (int) $w,
@@ -98,7 +98,7 @@ class CutDiagramSvgGenerator
                 $h = $remnant['height'] * $scalePxPerCm;
 
                 $elements[] = sprintf(
-                    '<rect x="%d" y="%d" width="%d" height="%d" fill="#f3f4f6" stroke="#4b5563" stroke-dasharray="5 3" stroke-width="1.5"/>',
+                    '<rect x="%d" y="%d" width="%d" height="%d" fill="#d1d5db" stroke="#9ca3af" stroke-dasharray="5 3" stroke-width="1.5"/>',
                     (int) $x,
                     (int) $y,
                     (int) $w,
