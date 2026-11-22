@@ -25,8 +25,9 @@
         .meta strong { font-size: 10px; }
         .grid { width: 100%; }
         .grid td { vertical-align: top; width: 50%; padding-right: 8px; }
-        table.facts { width: 100%; border-collapse: collapse; margin-top: 2px; }
-        table.facts td { width: 33.33%; vertical-align: top; padding: 1px 10px 7px 0; }
+        table.facts { width: 68%; border-collapse: collapse; margin-top: 2px; }
+        table.facts td { width: 50%; vertical-align: top; padding: 1px 8px 4px 0; }
+        .fact-follow { margin-top: 5px; }
         .fact-label { font-size: 8px; font-weight: bold; color: #4b5563; line-height: 1.2; }
         .fact-value { font-size: 10px; font-weight: bold; color: #111827; margin-top: 1px; line-height: 1.25; }
         .fact-sub { font-size: 9px; color: #111827; margin-top: 1px; line-height: 1.25; }
@@ -171,11 +172,11 @@
         }
         table.sheet-split { width: 100%; border-collapse: collapse; margin-top: 2px; }
         table.sheet-split td { vertical-align: top; }
-        td.sheet-main { width: 46%; padding-right: 16px; }
-        td.sheet-draw { width: 54%; text-align: center; padding-left: 10px; }
+        td.sheet-main { width: 62%; padding-right: 8px; }
+        td.sheet-draw { width: 38%; text-align: center; padding-left: 4px; }
         td.sheet-main table.boards-list { width: 100%; }
         .sheet-draw .caption { display: block; font-size: 8px; font-weight: bold; margin: 2px 0 8px; }
-        .sheet-draw img { width: 78mm; height: auto; }
+        .sheet-draw img { width: 62mm; height: auto; }
         table.boards-list { margin-top: 4px; table-layout: fixed; }
         table.boards-list th, table.boards-list td {
             padding: 2px 3px;
@@ -196,6 +197,14 @@
         table.boards-list .col-size { width: 15%; }
         table.boards-list .col-num { width: 10%; text-align: center; }
         table.boards-list td.piece-use { font-size: 8px; font-weight: bold; }
+        table.boards-list.one-line { table-layout: auto; width: 100%; margin-top: 2px; }
+        table.boards-list.one-line th,
+        table.boards-list.one-line td { white-space: nowrap; }
+        table.boards-list.one-line .col-n { width: 6%; }
+        table.boards-list.one-line .col-type { width: 24%; }
+        table.boards-list.one-line .col-use { width: 38%; }
+        table.boards-list.one-line .col-size { width: 14%; }
+        table.boards-list.one-line .col-num { width: 9%; }
         .summary.tight { margin-top: 4px; padding: 4px 6px; font-size: 8px; }
         .summary.tight strong { font-size: 8px; }
         h2.tight { margin: 10px 0 4px; }
@@ -341,13 +350,19 @@
                 <div class="fact-label">Tipo de lado</div>
                 <div class="fact-value"><span class="hl-type">{{ $sideDetail }}</span></div>
             </td>
-            <td>
-                @if(!empty($interiorLaterals) && is_array($interiorLaterals))
+        </tr>
+        @if(!empty($interiorLaterals) && is_array($interiorLaterals))
+            <tr>
+                <td colspan="2">
                     <div class="fact-label">Laterales interiores</div>
                     @foreach($interiorLaterals as $lateral)
                         <div class="fact-sub">{{ $lateral['use'] }} — {{ $lateral['board_mm'] }} mm — {{ measure_format($lateral['width_cm']) }} × {{ measure_format($lateral['height_cm']) }} cm</div>
                     @endforeach
-                @elseif((int) ($configuration['interior_laterals_count'] ?? 0) > 0)
+                </td>
+            </tr>
+        @elseif((int) ($configuration['interior_laterals_count'] ?? 0) > 0)
+            <tr>
+                <td colspan="2">
                     <div class="fact-label">Laterales interiores</div>
                     <div class="fact-sub">
                         {{ (int) $configuration['interior_laterals_count'] }} lateral(es), tablero {{ $configuration['interior_lateral_board_mm'] ?? 16 }} mm
@@ -355,11 +370,11 @@
                             — alto {{ measure_format($configuration['lateral_interior_depths_cm'][1]) }} cm
                         @endif
                     </div>
-                @endif
-            </td>
-        </tr>
+                </td>
+            </tr>
+        @endif
         <tr>
-            <td colspan="3">
+            <td colspan="2">
                 <table class="counts">
                     <tr>
                         <td>
@@ -420,8 +435,25 @@
                         <td>{{ isset($global['depth_cm']) ? measure_format($global['depth_cm']).' cm' : '—' }}</td>
                     </tr>
                 </table>
+                <div class="fact-label fact-follow">Barras de colgar</div>
+                <div class="fact-value">
+                    @if($hangingBarsCount >= 1)
+                        {{ $hangingBarsCount }} {{ $hangingBarsCount === 1 ? 'barra' : 'barras' }}
+                    @else
+                        —
+                    @endif
+                </div>
+                @if($hangingBarsCount >= 1)
+                    <table class="measure-box">
+                        <tr>
+                            <th>Largo</th>
+                        </tr>
+                        <tr>
+                            <td>{{ filled($hangingBarLengthCm) && (float) $hangingBarLengthCm > 0 ? measure_format((float) $hangingBarLengthCm).' cm' : '—' }}</td>
+                        </tr>
+                    </table>
+                @endif
             </td>
-            <td></td>
         </tr>
         <tr>
             <td>
@@ -453,26 +485,6 @@
                         <td>{{ isset($global['height_cm']) ? measure_format($global['height_cm']).' cm' : '—' }}</td>
                     </tr>
                 </table>
-            </td>
-            <td>
-                <div class="fact-label">Barras de colgar</div>
-                <div class="fact-value">
-                    @if($hangingBarsCount >= 1)
-                        {{ $hangingBarsCount }} {{ $hangingBarsCount === 1 ? 'barra' : 'barras' }}
-                    @else
-                        —
-                    @endif
-                </div>
-                @if($hangingBarsCount >= 1)
-                    <table class="measure-box">
-                        <tr>
-                            <th>Largo</th>
-                        </tr>
-                        <tr>
-                            <td>{{ filled($hangingBarLengthCm) && (float) $hangingBarLengthCm > 0 ? measure_format((float) $hangingBarLengthCm).' cm' : '—' }}</td>
-                        </tr>
-                    </table>
-                @endif
             </td>
         </tr>
     </table>
@@ -525,7 +537,7 @@
         </tbody>
     </table>
     <h2 class="tight">3. Listado de tableros a usar</h2>
-    <table class="data boards-list">
+    <table class="data boards-list one-line">
         <thead>
             <tr>
                 <th class="col-n">#</th>
