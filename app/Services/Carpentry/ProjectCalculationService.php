@@ -17,6 +17,11 @@ class ProjectCalculationService
     {
         $material ??= $project->material;
 
+        $preset = $project->preset;
+        $doorCount = $preset
+            ? ElevationFront::doorCount($preset->furniture_type, (string) $preset->name)
+            : 0;
+
         $furnitureResult = $this->furnitureCalculator->calculate([
             'height_cm' => $project->height_cm,
             'width_cm' => $project->width_cm,
@@ -25,6 +30,7 @@ class ProjectCalculationService
             'shelf_count' => $project->shelf_count,
             'shelf_thickness_cm' => $project->shelf_thickness_cm,
             'module_count' => $project->module_count,
+            'door_count' => $doorCount,
         ]);
 
         $cutPlan = ['boards' => [], 'total_boards' => 0, 'used_area_cm2' => 0, 'waste_area_cm2' => 0, 'efficiency_percent' => 0];

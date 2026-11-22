@@ -70,6 +70,7 @@ class PresetCutCalculator
             'shelf_count' => (int) ($configuration['shelf_count'] ?? 2),
             'shelf_thickness_cm' => $thicknessCm,
             'module_count' => max(1, (int) ($configuration['module_count'] ?? 1)),
+            'door_count' => ElevationFront::doorCount($data['furniture_type'] ?? null, (string) ($data['name'] ?? '')),
             // Cortes base de cualquier mueble: techo, base, laterales y fondo.
             'include_interior_pieces' => false,
             'back_board_quantity' => $fondoCount,

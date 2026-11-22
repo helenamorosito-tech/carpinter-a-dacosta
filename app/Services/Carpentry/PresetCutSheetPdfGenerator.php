@@ -5,7 +5,6 @@ namespace App\Services\Carpentry;
 use App\Enums\PlacementType;
 use App\Models\FurniturePreset;
 use App\Support\BoardMaterialOptions;
-use App\Support\FurnitureTypeCatalog;
 use App\Support\MeasureFormat;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
@@ -237,15 +236,13 @@ class PresetCutSheetPdfGenerator
             return '';
         }
 
-        $type = FurnitureTypeCatalog::resolve($formData['furniture_type'] ?? null);
-        $doorCount = (int) ($type['door_count'] ?? 0);
         $modules = max(1, (int) ($configuration['module_count'] ?? 1));
-        $laterals = is_array($configuration['interior_laterals'] ?? null)
-            ? count($configuration['interior_laterals'])
-            : 0;
-        $verticals = $modules === 1
-            ? max(0, max($doorCount - 1, $laterals))
-            : max(0, (int) round($doorCount / $modules) - 1);
+        $front = ElevationFront::layout(
+            $formData['furniture_type'] ?? null,
+            (string) ($formData['name'] ?? ''),
+            $modules,
+            $widthCm,
+        );
 
         $hasTrunk = (float) ($configuration['trunk_shelf_length_cm'] ?? 0) > 0;
         if (! $hasTrunk) {
@@ -257,19 +254,15 @@ class PresetCutSheetPdfGenerator
             }
         }
 
-        $moduleWidths = [];
-        for ($index = 0; $index < $modules; $index++) {
-            $moduleWidths[] = (int) round(($widthCm / $modules) * 10);
-        }
-
         return $this->elevation->generateDataUri([
             'height_cm' => $heightCm,
             'width_cm' => $widthCm,
             'modules' => $modules,
-            'verticals' => $verticals,
+            'verticals' => 0,
+            'bay_verticals' => $front['verticals'],
+            'module_widths_mm' => $front['widths_mm'],
             'has_trunk' => $hasTrunk,
             'hanging_bars' => max(0, (int) ($configuration['hanging_bars_count'] ?? 0)),
-            'module_widths_mm' => $moduleWidths,
             'depth_cm' => (float) ($formData['global_depth_cm'] ?? 0),
             'shelves' => $this->elevationShelves($configuration),
             'drawers' => $this->elevationDrawers($configuration),
@@ -377,7 +370,10 @@ class PresetCutSheetPdfGenerator
         $configuration['interior_laterals_count'] = count($configuration['interior_laterals']);
         $configuration = FurniturePreset::normalizeHangingBarLengthCm($configuration);
 
-        $furnitureTypeLabel = FurnitureTypeCatalog::label($formData['furniture_type'] ?? null);
+        $furnitureTypeLabel = ElevationFront::typeLabel(
+            $formData['furniture_type'] ?? null,
+            (string) ($formData['name'] ?? ''),
+        );
 
         $sideType = PlacementType::tryFrom((string) ($formData['side_type'] ?? ''));
 

@@ -15,6 +15,7 @@ class FurnitureCalculator
      *     shelf_count?: int,
      *     shelf_thickness_cm?: float|int,
      *     module_count?: int,
+     *     door_count?: int,
      *     include_interior_pieces?: bool,
      *     back_board_quantity?: int,
      * }  $input
@@ -40,7 +41,10 @@ class FurnitureCalculator
             ? max(0, $width - (self::WALL_CLEARANCE_PER_SIDE_CM * 2))
             : $width;
 
-        $doorCount = $this->resolveDoorCount($effectiveWidth);
+        $doorCount = max(0, (int) ($input['door_count'] ?? 0));
+        if ($doorCount < 1) {
+            $doorCount = $this->resolveDoorCount($effectiveWidth);
+        }
         $pieces = [];
 
         foreach (range(1, $moduleCount) as $module) {

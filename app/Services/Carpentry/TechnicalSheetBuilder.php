@@ -31,7 +31,7 @@ class TechnicalSheetBuilder
         $machining = is_array($selected) ? array_values(array_map('strval', $selected)) : MachiningOptions::defaults();
 
         $type = FurnitureTypeCatalog::resolve($formData['furniture_type'] ?? null);
-        $doorCount = (int) ($type['door_count'] ?? 0);
+        $doorCount = ElevationFront::doorCount($formData['furniture_type'] ?? null, (string) ($formData['name'] ?? ''));
         $isCorrederas = (bool) ($type['is_correderas'] ?? false);
         $title = $this->sheetTitle($type['label'] ?? null, $doorCount, $isCorrederas);
 
@@ -44,27 +44,23 @@ class TechnicalSheetBuilder
             : [];
         $drawers = $this->drawerBlock($configuration, $structureMm, $backMm, $machining);
 
-        $laterals = is_array($configuration['interior_laterals'] ?? null)
-            ? count($configuration['interior_laterals'])
-            : 0;
-        $verticals = $modules === 1
-            ? max(0, max($doorCount - 1, $laterals))
-            : max(0, (int) round($doorCount / $modules) - 1);
-
-        $moduleWidths = [];
-        for ($index = 0; $index < $modules; $index++) {
-            $moduleWidths[] = $this->mm($widthCm / $modules);
-        }
+        $front = ElevationFront::layout(
+            $formData['furniture_type'] ?? null,
+            (string) ($formData['name'] ?? ''),
+            $modules,
+            $widthCm,
+        );
 
         $elevation = ($heightCm > 0 && $widthCm > 0)
             ? $this->elevation->generateDataUri([
                 'height_cm' => $heightCm,
                 'width_cm' => $widthCm,
                 'modules' => $modules,
-                'verticals' => $verticals,
+                'verticals' => 0,
+                'bay_verticals' => $front['verticals'],
+                'module_widths_mm' => $front['widths_mm'],
                 'has_trunk' => $this->hasTrunk($parts),
                 'hanging_bars' => max(0, (int) ($configuration['hanging_bars_count'] ?? 0)),
-                'module_widths_mm' => $moduleWidths,
                 'depth_cm' => $depthCm,
                 'shelves' => $this->elevationShelves($configuration, $widthCm),
                 'drawers' => $this->elevationDrawers($configuration),
