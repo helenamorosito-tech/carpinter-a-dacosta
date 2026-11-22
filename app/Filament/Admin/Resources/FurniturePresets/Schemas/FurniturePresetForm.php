@@ -22,7 +22,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
-use Filament\Schemas\Components\Html;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -30,7 +29,6 @@ use Filament\Schemas\Components\View;
 use Filament\Schemas\Components\Wizard;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
-use Illuminate\Support\HtmlString;
 
 class FurniturePresetForm
 {
@@ -366,6 +364,7 @@ class FurniturePresetForm
                             self::furnitureTypeBanner(withTotalShelves: true),
                             Section::make('Balda maletero')
                                 ->columns(4)
+                                ->collapsed()
                                 ->description('Arriba del hueco. Por defecto: ancho global − 6,5 cm y fondo global − 9 cm.')
                                 ->schema([
                                     TextInput::make('configuration.trunk_shelf_discount_cm')
@@ -402,6 +401,7 @@ class FurniturePresetForm
                                         ->live(),
                                 ]),
                             Section::make('Baldas')
+                                ->collapsed()
                                 ->description('Cada balda en su fila: ancho, fondo y tablero. Por defecto, ancho global − 13 cm y fondo global − 9 cm.')
                                 ->schema([
                                     Repeater::make('configuration.additional_shelves')
@@ -477,19 +477,6 @@ class FurniturePresetForm
                                                 ->live(),
                                         ]),
                                 ]),
-                            Html::make(function (Get $get): HtmlString {
-                                $total = self::totalShelvesCount($get);
-
-                                return new HtmlString(
-                                    '<div style="margin-top:0.75rem;display:flex;align-items:baseline;gap:0.5rem;">'
-                                    .'<span style="font-size:22px;font-weight:700;">Total baldas:</span>'
-                                    .'<span style="font-size:22px;font-weight:700;color:#dc2626;'
-                                    .'animation:shelves-blink 1s step-start infinite;">'
-                                    .e((string) $total)
-                                    .'</span></div>'
-                                    .'<style>@keyframes shelves-blink{0%,49%{opacity:1}50%,100%{opacity:0}}</style>'
-                                );
-                            }),
                             Hidden::make('configuration.shelf_count')
                                 ->default(1)
                                 ->dehydrated(),
@@ -640,7 +627,8 @@ class FurniturePresetForm
                                         }),
                                 ]),
                             Section::make('Mecanizados')
-                                ->description('Herrajes y taladros de la ficha. Si dejas la cantidad vacía, se calcula.')
+                                ->extraAttributes(['class' => 'fi-section-machining'])
+                                ->description('Herrajes y taladros de la ficha. Si dejas la cantidad vacía, se calcula. Abajo puedes añadir otros, con nombre y posición.')
                                 ->columns(4)
                                 ->schema([
                                     CheckboxList::make('configuration.machining')
@@ -682,8 +670,29 @@ class FurniturePresetForm
                                             (array) $get('configuration.machining'),
                                             true,
                                         )),
+                                    Repeater::make('configuration.machining_extra')
+                                        ->label('Otros mecanizados')
+                                        ->defaultItems(0)
+                                        ->addActionLabel('Agregar mecanizado')
+                                        ->reorderable()
+                                        ->columnSpanFull()
+                                        ->columns(2)
+                                        ->itemLabel(fn (array $state): ?string => filled($state['name'] ?? null) ? (string) $state['name'] : null)
+                                        ->schema([
+                                            TextInput::make('name')
+                                                ->label('Nombre')
+                                                ->required()
+                                                ->maxLength(80)
+                                                ->placeholder('Bisagra'),
+                                            TextInput::make('position')
+                                                ->label('Posición')
+                                                ->required()
+                                                ->maxLength(120)
+                                                ->placeholder('80 mm desde el canto superior del lateral'),
+                                        ]),
                                 ]),
                             Section::make('Posiciones del mecanizado')
+                                ->extraAttributes(['class' => 'fi-section-machining'])
                                 ->description('Distancias en milímetros desde el canto de la pieza. Si un campo queda vacío, el dibujo mantiene la posición esquemática. El cálculo automático se cierra cuando el cliente confirme cómo se miden.')
                                 ->columns(4)
                                 ->collapsed()
@@ -749,7 +758,7 @@ class FurniturePresetForm
                                         ->suffix('mm'),
                                 ]),
                             Section::make('Cálculo de cortes')
-                                ->collapsible()
+                                ->collapsed()
                                 ->description('Plan de cortes, aprovechamiento de sobrantes del almacén (S-XX) y tableros nuevos necesarios.')
                                 ->schema([
                                     View::make('filament.presets.cut-preview')

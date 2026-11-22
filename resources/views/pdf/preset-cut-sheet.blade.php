@@ -233,6 +233,9 @@
         }
         .machining { text-align: center; }
         .machining img { width: 170mm; height: auto; }
+        table.machining-extra { width: 140mm; margin: 6px auto 0; border-collapse: collapse; }
+        table.machining-extra td { font-size: 10px; padding: 2px 8px; text-align: left; }
+        table.machining-extra td.nm { font-weight: bold; width: 42%; }
         table.pieces-list th, table.pieces-list td { padding: 3px 4px; font-size: 9px; }
         table.pieces-list .col-code { width: 8%; }
         table.pieces-list .col-name { width: 34%; }
@@ -612,12 +615,24 @@
         | Desp. {{ measure_format($totals['waste_area_cm2']) }} cm²
     </div>
 
-    @if(!empty($machiningImage))
+    @if(!empty($machiningImage) || count($machiningExtras ?? []))
         <div class="page-break">
             <h2 class="mecanizados">MECANIZADOS</h2>
-            <div class="machining">
-                <img src="{{ $machiningImage }}" alt="Mecanizados">
-            </div>
+            @if(!empty($machiningImage))
+                <div class="machining">
+                    <img src="{{ $machiningImage }}" alt="Mecanizados">
+                </div>
+            @endif
+            @if(count($machiningExtras ?? []))
+                <table class="machining-extra">
+                    @foreach($machiningExtras as $row)
+                        <tr>
+                            <td class="nm">{{ $row['name'] }}</td>
+                            <td>{{ $row['position'] }}</td>
+                        </tr>
+                    @endforeach
+                </table>
+            @endif
         </div>
     @endif
 

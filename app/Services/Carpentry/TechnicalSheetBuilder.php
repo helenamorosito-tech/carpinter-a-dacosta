@@ -98,7 +98,8 @@ class TechnicalSheetBuilder
             'drawers' => $drawers,
             'elevation' => $elevation,
             'machiningImage' => $machiningImage,
-            'showMachiningPage' => $machiningImage !== '',
+            'machiningExtras' => MachiningOptions::extras($configuration),
+            'showMachiningPage' => $machiningImage !== '' || MachiningOptions::extras($configuration) !== [],
         ];
     }
 
@@ -243,6 +244,14 @@ class TechnicalSheetBuilder
                 'name' => 'TORNILLO ENSAMBLAJE',
                 'qty' => '',
                 'measures' => '',
+            ];
+        }
+
+        foreach (MachiningOptions::extras($configuration) as $extra) {
+            $rows[] = [
+                'name' => mb_strtoupper($extra['name']),
+                'qty' => '',
+                'measures' => $extra['position'],
             ];
         }
 

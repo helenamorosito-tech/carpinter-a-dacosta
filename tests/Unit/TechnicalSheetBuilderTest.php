@@ -58,6 +58,10 @@ class TechnicalSheetBuilderTest extends TestCase
                 'drawer_depth_cm' => 45,
                 'machining' => MachiningOptions::defaults(),
                 'machining_suplemento_height_cm' => 6,
+                'machining_extra' => [
+                    ['name' => 'Bisagra', 'position' => '80 mm desde el canto superior'],
+                    ['name' => '  ', 'position' => ''],
+                ],
             ],
         ];
 
@@ -86,6 +90,13 @@ class TechnicalSheetBuilderTest extends TestCase
         $this->assertSame('2430 x 600 x 16', $lateral['measures']);
 
         $this->assertNotEmpty($sheet['hardware']);
+        $extra = $sheet['hardware'][array_key_last($sheet['hardware'])];
+        $this->assertSame('BISAGRA', $extra['name']);
+        $this->assertSame('80 mm desde el canto superior', $extra['measures']);
+        $this->assertSame(
+            [['name' => 'Bisagra', 'position' => '80 mm desde el canto superior']],
+            $sheet['machiningExtras'],
+        );
         $this->assertCount(3, $sheet['supplements']);
         $this->assertSame(548, (int) explode(' X ', $sheet['supplements'][1]['measures'])[0]);
         $this->assertTrue($sheet['drawers']['frentes']);

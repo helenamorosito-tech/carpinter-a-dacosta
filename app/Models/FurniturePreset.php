@@ -146,6 +146,7 @@ class FurniturePreset extends Model
             'machining_portabaldas_qty' => null,
             'machining_soporte_lateral_qty' => null,
             'machining_suplemento_height_cm' => 6,
+            'machining_extra' => [],
         ];
     }
 
@@ -192,6 +193,7 @@ class FurniturePreset extends Model
             $configuration['lateral_interior_depths_cm'],
         );
         $configuration = self::normalizeHangingBarLengthCm($configuration);
+        $configuration['machining_extra'] = MachiningOptions::extras($configuration);
         $data['configuration'] = $configuration;
         $data['default_shelf_count'] = (int) $configuration['shelf_count'];
         $data['board_width_cm'] = min(
@@ -268,6 +270,7 @@ class FurniturePreset extends Model
         }
 
         $configuration = self::normalizeHangingBarLengthCm($configuration);
+        $configuration['machining_extra'] = MachiningOptions::extras($configuration);
 
         $data['configuration'] = $configuration;
         $furnitureType = FurnitureTypeCatalog::normalizeSlug($data['furniture_type'] ?? null);

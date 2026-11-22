@@ -98,6 +98,42 @@ class MachiningOptions
         ];
     }
 
+    /**
+     * Mecanizados añadidos a mano: nombre y posición en texto.
+     *
+     * @return list<array{name: string, position: string}>
+     */
+    public static function extras(?array $configuration): array
+    {
+        $raw = $configuration['machining_extra'] ?? null;
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach ($raw as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+
+            $name = trim((string) ($row['name'] ?? ''));
+            $position = trim((string) ($row['position'] ?? ''));
+
+            if ($name === '' && $position === '') {
+                continue;
+            }
+
+            $items[] = [
+                'name' => $name !== '' ? $name : 'Mecanizado',
+                'position' => $position,
+            ];
+        }
+
+        return $items;
+    }
+
     private static function millimetres(mixed $value): ?float
     {
         if ($value === null || $value === '') {

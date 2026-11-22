@@ -75,6 +75,9 @@
         }
         .machining { text-align: center; }
         .machining img { width: 175mm; height: auto; }
+        table.machining-extra { width: 140mm; margin: 8px auto 0; border-collapse: collapse; }
+        table.machining-extra td { font-size: 10px; padding: 2px 8px; text-align: left; }
+        table.machining-extra td.nm { font-weight: bold; width: 42%; }
         .page-break { page-break-before: always; }
         .date { text-align: right; font-size: 9px; margin: 0 0 2px; }
     </style>
@@ -188,9 +191,21 @@
             <div class="date">{{ $generatedAt }}</div>
             <h1 style="text-align:left;">{{ $title }}</h1>
             <h2 class="mecanizados">MECANIZADOS</h2>
-            <div class="machining">
-                <img src="{{ $machiningImage }}" alt="Mecanizados">
-            </div>
+            @if($machiningImage !== '')
+                <div class="machining">
+                    <img src="{{ $machiningImage }}" alt="Mecanizados">
+                </div>
+            @endif
+            @if(count($machiningExtras ?? []))
+                <table class="machining-extra">
+                    @foreach($machiningExtras as $row)
+                        <tr>
+                            <td class="nm">{{ $row['name'] }}</td>
+                            <td>{{ $row['position'] }}</td>
+                        </tr>
+                    @endforeach
+                </table>
+            @endif
         </div>
     @endif
 </body>

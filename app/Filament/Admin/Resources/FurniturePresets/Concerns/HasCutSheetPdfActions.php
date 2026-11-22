@@ -51,6 +51,7 @@ trait HasCutSheetPdfActions
                 'machining_portabaldas_qty' => $get('configuration.machining_portabaldas_qty'),
                 'machining_soporte_lateral_qty' => $get('configuration.machining_soporte_lateral_qty'),
                 'machining_suplemento_height_cm' => $get('configuration.machining_suplemento_height_cm'),
+                'machining_extra' => $get('configuration.machining_extra') ?? [],
             ],
             'board_width_cm' => $get('board_width_cm'),
             'board_height_cm' => $get('board_height_cm'),

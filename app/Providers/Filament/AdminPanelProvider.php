@@ -138,6 +138,33 @@ class AdminPanelProvider extends PanelProvider
                                 grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                             }
                         }
+
+                        /* Mecanizados: azul claro en modo claro, azul oscuro en modo oscuro */
+                        .fi-section-machining > .fi-section:not(.fi-aside) {
+                            background-color: #e3f2fb !important;
+                            --tw-ring-color: rgb(125 176 210 / 0.65) !important;
+                        }
+
+                        .fi-section-machining > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #b7d6ec !important;
+                        }
+
+                        .dark .fi-section-machining > .fi-section:not(.fi-aside) {
+                            background-color: #17384f !important;
+                            --tw-ring-color: rgb(125 186 220 / 0.38) !important;
+                        }
+
+                        .dark .fi-section-machining > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(147 197 224 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-machining .fi-section-header-heading {
+                            color: #f3f8fc !important;
+                        }
+
+                        .dark .fi-section-machining .fi-section-header-description {
+                            color: #c5d7e6 !important;
+                        }
                     </style>
                 BLADE),
             )

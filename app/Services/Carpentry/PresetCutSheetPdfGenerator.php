@@ -569,6 +569,7 @@ class PresetCutSheetPdfGenerator
                 $this->machiningDiagrams($pieces),
                 MachiningOptions::positions(is_array($configuration) ? $configuration : []),
             ),
+            'machiningExtras' => MachiningOptions::extras(is_array($configuration) ? $configuration : []),
             'structureBoardPages' => array_chunk($structureDiagrams, 1),
             'backBoardPages' => array_chunk($backDiagrams, 1),
             'cutDiagramPages' => $this->cutDiagramPages($structureDiagrams, $backDiagrams, $structureThickness, $backThickness),
