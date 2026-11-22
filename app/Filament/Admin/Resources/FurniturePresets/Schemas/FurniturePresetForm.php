@@ -25,6 +25,7 @@ use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\HtmlString;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -45,6 +46,7 @@ class FurniturePresetForm
                     Step::make('Medidas')
                         ->schema([
                             Section::make('Hueco y mueble')
+                                ->extraAttributes(['class' => 'fi-section-opening'])
                                 ->description('De izquierda a derecha: alto, ancho y fondo del hueco, y después los del mueble.')
                                 ->columns(6)
                                 ->schema([
@@ -660,7 +662,13 @@ class FurniturePresetForm
                                         }),
                                 ]),
                             Section::make(function (Get $get): HtmlString {
-                                return self::shelfCountBadge('Mecanizados', self::machiningCount($get), 'machining');
+                                $count = self::machiningCount($get);
+                                $badge = Blade::render(
+                                    '<x-filament::badge color="info" tag="span">{{ $count }}</x-filament::badge>',
+                                    ['count' => $count],
+                                );
+
+                                return new HtmlString('<span class="fi-machining-heading">Mecanizados '.$badge.'</span>');
                             })
                                 ->extraAttributes(['class' => 'fi-section-machining'])
                                 ->collapsed()

@@ -329,14 +329,10 @@ class AdminPanelProvider extends PanelProvider
                             color: #12321c;
                         }
 
-                        .fi-shelf-count-machining {
-                            background-color: #1d6fa5;
-                            color: #fff;
-                        }
-
-                        .dark .fi-shelf-count-machining {
-                            background-color: #d3ebf8;
-                            color: #123044;
+                        .fi-machining-heading {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.55rem;
                         }
 
                         /* Cuerpo: gris claro, y gris más claro que el fondo en modo oscuro */
@@ -418,6 +414,33 @@ class AdminPanelProvider extends PanelProvider
 
                         .dark .fi-section-costado .fi-section-header-description {
                             color: #c9e6d1 !important;
+                        }
+
+                        /* Hueco y mueble: beige claro, y beige oscuro en modo oscuro */
+                        .fi-section-opening > .fi-section:not(.fi-aside) {
+                            background-color: #f6f1e8 !important;
+                            --tw-ring-color: rgb(196 176 140 / 0.55) !important;
+                        }
+
+                        .fi-section-opening > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #e6d8c4 !important;
+                        }
+
+                        .dark .fi-section-opening > .fi-section:not(.fi-aside) {
+                            background-color: #3d3428 !important;
+                            --tw-ring-color: rgb(214 190 150 / 0.38) !important;
+                        }
+
+                        .dark .fi-section-opening > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(214 190 150 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-opening .fi-section-header-heading {
+                            color: #faf6f0 !important;
+                        }
+
+                        .dark .fi-section-opening .fi-section-header-description {
+                            color: #eadfce !important;
                         }
 
                         /* Paredes: morado claro, y morado oscuro en modo oscuro */

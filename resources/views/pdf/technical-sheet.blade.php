@@ -24,22 +24,16 @@
         .caption { font-size: 9px; font-weight: bold; margin: 0 0 2px; }
         .zocalo { font-weight: bold; }
         .units { color: #b91c1c; font-weight: bold; font-size: 14px; }
-        .material { margin: 3px 0 3px; }
-        .material .tag {
-            display: inline-block;
-            border: 1px solid #111;
-            padding: 1px 6px;
+        table.hueco td.material-tag {
             font-size: 9px;
             font-weight: bold;
-            margin-right: 4px;
+            white-space: nowrap;
         }
-        .material .name {
-            display: inline-block;
+        table.hueco td.material-name {
             background: #c5dd8a;
-            border: 1px solid #6b8f3a;
-            padding: 1px 8px;
             font-weight: bold;
             font-size: 11px;
+            letter-spacing: 0.2px;
         }
         table.list { width: 100%; border-collapse: collapse; }
         table.list td { padding: 0 2px 0 0; font-size: 9px; line-height: 1.2; vertical-align: baseline; }
@@ -107,12 +101,11 @@
                         <td class="zocalo">{{ $hueco['zocalo_mm'] }}</td>
                         <td class="units">{{ $hueco['unidades'] }}</td>
                     </tr>
+                    <tr>
+                        <td class="material-tag">MATERIAL</td>
+                        <td class="material-name" colspan="3">{{ $material }}</td>
+                    </tr>
                 </table>
-
-                <div class="material">
-                    <span class="tag">MATERIAL</span>
-                    <span class="name">{{ $material }}</span>
-                </div>
 
                 <table class="list">
                     @foreach($parts as $row)
