@@ -102,21 +102,22 @@ class AntFurnitureRemnantsTable
             ->filters([
                 Filter::make('measures')
                     ->label('Buscar por medida')
+                    ->columns(3)
                     ->schema([
                         TextInput::make('width_cm')
-                            ->label('Ancho máx. (cm)')
+                            ->label('Ancho máx.')
                             ->numeric()
                             ->minValue(0.01)
                             ->step(0.01)
                             ->suffix('cm'),
                         TextInput::make('length_cm')
-                            ->label('Largo máx. (cm)')
+                            ->label('Largo máx.')
                             ->numeric()
                             ->minValue(0.01)
                             ->step(0.01)
                             ->suffix('cm'),
                         Select::make('thickness_mm')
-                            ->label('Grosor (obligatorio para saber si sirve)')
+                            ->label('Grosor')
                             ->options(collect(BoardThickness::cases())->mapWithKeys(
                                 fn (BoardThickness $t): array => [$t->value => $t->getLabel()],
                             )->all())

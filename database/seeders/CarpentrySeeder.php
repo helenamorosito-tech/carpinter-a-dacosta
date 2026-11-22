@@ -24,13 +24,16 @@ class CarpentrySeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = User::query()->updateOrCreate(
-            ['email' => 'admin@carpinteriadacosta.com'],
-            [
-                'name' => 'Administrador',
-                'password' => Hash::make('password'),
-            ],
-        );
+        $admin = User::query()->firstWhere('email', 'admin@gmail.com')
+            ?? User::query()->firstWhere('email', 'admin@carpinteriadacosta.com')
+            ?? new User();
+
+        $admin->fill([
+            'name' => 'Administrador',
+            'email' => 'admin@gmail.com',
+            'password' => Hash::make('123456'),
+        ]);
+        $admin->save();
 
         $materials = [
             [

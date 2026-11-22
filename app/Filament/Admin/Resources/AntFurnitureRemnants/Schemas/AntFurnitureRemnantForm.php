@@ -19,29 +19,39 @@ class AntFurnitureRemnantForm
         return $schema
             ->components([
                 Section::make('Sobrante')
-                    ->description('El ID S-XX se asigna automáticamente al guardar.')
-                    ->columns(2)
+                    ->description('El ID S-XX se asigna al guardar.')
+                    ->columns(4)
                     ->schema([
                         TextInput::make('code')
                             ->label('ID')
                             ->disabled()
                             ->dehydrated(false)
-                            ->placeholder('S-XX (automático)')
+                            ->placeholder('S-XX')
                             ->visibleOn('edit'),
                         TextInput::make('name')
-                            ->label('Nombre de pieza')
+                            ->label('Pieza')
                             ->required()
                             ->maxLength(255)
-                            ->columnSpan(fn (string $operation): int => $operation === 'edit' ? 1 : 2),
+                            ->columnSpan(fn (string $operation): int => $operation === 'edit' ? 2 : 3),
+                        Select::make('status')
+                            ->label('Estado')
+                            ->options([
+                                'available' => 'Disponible',
+                                'reserved' => 'Reservada',
+                                'used' => 'Usada',
+                            ])
+                            ->required()
+                            ->native(false)
+                            ->default('available'),
                         TextInput::make('width_cm')
-                            ->label('Ancho (cm)')
+                            ->label('Ancho')
                             ->numeric()
                             ->required()
                             ->minValue(0.01)
                             ->step(0.01)
                             ->suffix('cm'),
                         TextInput::make('length_cm')
-                            ->label('Largo (cm)')
+                            ->label('Largo')
                             ->numeric()
                             ->required()
                             ->minValue(0.01)
@@ -56,7 +66,7 @@ class AntFurnitureRemnantForm
                             ->native(false)
                             ->default(BoardThickness::Mm16->value),
                         Select::make('color')
-                            ->label('Tipo de tablero')
+                            ->label('Tablero')
                             ->options(collect(BoardColor::cases())->mapWithKeys(
                                 fn (BoardColor $c): array => [$c->value => $c->getLabel()],
                             )->all())
@@ -72,21 +82,11 @@ class AntFurnitureRemnantForm
                             ->required()
                             ->native(false)
                             ->default(AntRemnantOrigin::Registered->value)
-                            ->helperText('Pieza registrada = alta manual. Sobrante de mueble = indicado por el sistema.'),
-                        Select::make('status')
-                            ->label('Estado')
-                            ->options([
-                                'available' => 'Disponible',
-                                'reserved' => 'Reservada',
-                                'used' => 'Usada',
-                            ])
-                            ->required()
-                            ->native(false)
-                            ->default('available'),
+                            ->columnSpan(2),
                         Toggle::make('is_active')
                             ->label('Activo')
                             ->default(true)
-                            ->columnSpanFull(),
+                            ->inline(false),
                         Textarea::make('notes')
                             ->label('Notas')
                             ->rows(2)

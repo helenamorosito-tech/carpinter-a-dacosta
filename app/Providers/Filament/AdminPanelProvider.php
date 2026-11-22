@@ -92,10 +92,10 @@ class AdminPanelProvider extends PanelProvider
                             stroke: currentColor;
                         }
 
-                        /* Wizard de presets: los 7 pasos visibles, sin scroll horizontal en encabezados */
+                        /* Wizard de presets: los 4 pasos visibles, sin scroll horizontal en encabezados */
                         .fi-preset-wizard .fi-sc-wizard-header {
                             display: grid !important;
-                            grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+                            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
                             grid-auto-flow: unset !important;
                             overflow: visible !important;
                             overflow-x: visible !important;

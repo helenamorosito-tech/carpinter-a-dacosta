@@ -2,8 +2,11 @@
 
 namespace App\Filament\Admin\Resources\FurniturePresets\Tables;
 
+use App\Models\FurniturePreset;
+use App\Services\Carpentry\TechnicalSheetPdfGenerator;
 use App\Support\FilamentUiBadges;
 use App\Support\FurnitureTypeCatalog;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -63,6 +66,15 @@ class FurniturePresetsTable
             ])
             ->filters([])
             ->recordActions([
+                Action::make('technicalSheet')
+                    ->label('Ficha técnica')
+                    ->icon('heroicon-o-document-text')
+                    ->action(function (FurniturePreset $record) {
+                        $generator = app(TechnicalSheetPdfGenerator::class);
+                        $token = $generator->storePreview($record);
+
+                        return redirect()->away($generator->previewUrl($token));
+                    }),
                 EditAction::make(),
             ])
             ->toolbarActions([

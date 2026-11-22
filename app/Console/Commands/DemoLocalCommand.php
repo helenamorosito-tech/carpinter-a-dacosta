@@ -35,8 +35,8 @@ class DemoLocalCommand extends Command
         $this->newLine();
         $this->info('Demo local lista.');
         $this->line('  URL:     '.rtrim((string) config('app.url'), '/').'/admin');
-        $this->line('  Usuario: admin@carpinteriadacosta.com');
-        $this->line('  Clave:   password');
+        $this->line('  Usuario: admin@gmail.com');
+        $this->line('  Clave:   123456');
         $this->line('  Arranque: php artisan serve   (o composer run dev)');
 
         return self::SUCCESS;

@@ -25,6 +25,11 @@
         .meta strong { font-size: 10px; }
         .grid { width: 100%; }
         .grid td { vertical-align: top; width: 50%; padding-right: 8px; }
+        table.facts { width: 100%; border-collapse: collapse; margin-top: 2px; }
+        table.facts td { width: 33.33%; vertical-align: top; padding: 1px 10px 7px 0; }
+        .fact-label { font-size: 8px; font-weight: bold; color: #4b5563; line-height: 1.2; }
+        .fact-value { font-size: 10px; font-weight: bold; color: #111827; margin-top: 1px; line-height: 1.25; }
+        .fact-sub { font-size: 9px; color: #111827; margin-top: 1px; line-height: 1.25; }
         table.data { width: 100%; border-collapse: collapse; margin-top: 6px; }
         table.data th, table.data td { border: 1px solid #d1d5db; padding: 5px 6px; text-align: left; }
         table.data th { background: #f3f4f6; font-size: 9px; }
@@ -228,86 +233,103 @@
     <div class="muted">Generado el {{ $generatedAt }}</div>
 
     <h2>1. Datos del mueble</h2>
-    <table class="grid">
+    @php
+        $drawersCount = (int) ($configuration['drawers_count'] ?? 0);
+        $hangingBarsCount = (int) ($configuration['hanging_bars_count'] ?? 0);
+        $hangingBarLengthCm = $configuration['hanging_bar_length_cm']
+            ?? (isset($configuration['hanging_bar_measure_m'])
+                ? ((float) $configuration['hanging_bar_measure_m'] * 100)
+                : null);
+    @endphp
+    <table class="facts">
         <tr>
             <td>
-                <div class="meta">
-                    <div><span class="hl-type">Tipo de mueble: {{ $furnitureType }}</span></div>
-                    <div><span class="hl-type">Tipo de lado: {{ $sideDetail }}</span></div>
-                    <div>
-                        <strong>Hueco:</strong>
-                        @if($opening['height_m'] || $opening['width_m'] || $opening['depth_cm'])
-                            {{ $opening['height_m'] ?? '—' }} m × {{ $opening['width_m'] ?? '—' }} m × {{ $opening['depth_cm'] ?? '—' }} cm
-                        @else
-                            —
+                <div class="fact-label">Tipo de mueble</div>
+                <div class="fact-value"><span class="hl-type">{{ $furnitureType }}</span></div>
+            </td>
+            <td>
+                <div class="fact-label">Tipo de lado</div>
+                <div class="fact-value"><span class="hl-type">{{ $sideDetail }}</span></div>
+            </td>
+            <td>
+                <div class="fact-label">Módulos</div>
+                <div class="fact-value">{{ $configuration['module_count'] ?? 1 }}</div>
+                @if(!empty($interiorLaterals) && is_array($interiorLaterals))
+                    <div class="fact-label" style="margin-top:4px;">Laterales interiores</div>
+                    @foreach($interiorLaterals as $lateral)
+                        <div class="fact-sub">{{ $lateral['use'] }} — {{ $lateral['board_mm'] }} mm — {{ measure_format($lateral['width_cm']) }} × {{ measure_format($lateral['height_cm']) }} cm</div>
+                    @endforeach
+                @elseif((int) ($configuration['interior_laterals_count'] ?? 0) > 0)
+                    <div class="fact-sub">
+                        {{ (int) $configuration['interior_laterals_count'] }} lateral(es), tablero {{ $configuration['interior_lateral_board_mm'] ?? 16 }} mm
+                        @if(!empty($configuration['lateral_interior_depths_cm'][1]))
+                            — alto {{ measure_format($configuration['lateral_interior_depths_cm'][1]) }} cm
                         @endif
                     </div>
-                    <div>
-                        <strong>Medida global:</strong>
-                        {{ isset($global['height_cm']) ? measure_format($global['height_cm']) : '—' }} × {{ isset($global['width_cm']) ? measure_format($global['width_cm']) : '—' }} × {{ isset($global['depth_cm']) ? measure_format($global['depth_cm']) : '—' }} cm
-                    </div>
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="fact-label">Hueco</div>
+                <div class="fact-value">
+                    @if($opening['height_m'] || $opening['width_m'] || $opening['depth_cm'])
+                        {{ $opening['height_m'] ?? '—' }} m × {{ $opening['width_m'] ?? '—' }} m × {{ $opening['depth_cm'] ?? '—' }} cm
+                    @else
+                        —
+                    @endif
                 </div>
             </td>
             <td>
-                <div class="meta">
-                    @if(! empty($showBoardBase))
-                        <div><strong>Tablero base:</strong> {{ measure_format($boardSize['width_cm']) }} × {{ measure_format($boardSize['height_cm']) }} cm</div>
-                    @endif
-                    <div><strong>Tableros:</strong> {{ $structureBoard['quantity'] ?? 0 }} tablero(s) × {{ $structureBoard['thickness_mm'] ?? 16 }} mm</div>
-                    <div><strong>Fondo del mueble:</strong> {{ $backBoard['quantity'] ?? 1 }} × {{ $backBoard['thickness_mm'] ?? 10 }} mm — {{ isset($global['width_cm']) ? measure_format($global['width_cm']) : '—' }} × {{ isset($global['height_cm']) ? measure_format($global['height_cm']) : '—' }} cm</div>
-                    <div><strong>Módulos:</strong> {{ $configuration['module_count'] ?? 1 }}</div>
-                    <div><strong>Baldas:</strong> {{ $configuration['shelf_count'] ?? 0 }}</div>
-                    @php
-                        $drawersCount = (int) ($configuration['drawers_count'] ?? 0);
-                        $hangingBarsCount = (int) ($configuration['hanging_bars_count'] ?? 0);
-                        $hangingBarLengthCm = $configuration['hanging_bar_length_cm']
-                            ?? (isset($configuration['hanging_bar_measure_m'])
-                                ? ((float) $configuration['hanging_bar_measure_m'] * 100)
-                                : null);
-                    @endphp
+                <div class="fact-label">Medida global</div>
+                <div class="fact-value">
+                    {{ isset($global['height_cm']) ? measure_format($global['height_cm']) : '—' }} × {{ isset($global['width_cm']) ? measure_format($global['width_cm']) : '—' }} × {{ isset($global['depth_cm']) ? measure_format($global['depth_cm']) : '—' }} cm
+                </div>
+            </td>
+            <td>
+                <div class="fact-label">Baldas</div>
+                <div class="fact-value">{{ $configuration['shelf_count'] ?? 0 }}</div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div class="fact-label">Tableros</div>
+                <div class="fact-value">{{ $structureBoard['quantity'] ?? 0 }} × {{ $structureBoard['thickness_mm'] ?? 16 }} mm</div>
+                @if(! empty($showBoardBase))
+                    <div class="fact-sub">Base {{ measure_format($boardSize['width_cm']) }} × {{ measure_format($boardSize['height_cm']) }} cm</div>
+                @endif
+            </td>
+            <td>
+                <div class="fact-label">Fondo del mueble</div>
+                <div class="fact-value">{{ $backBoard['quantity'] ?? 1 }} × {{ $backBoard['thickness_mm'] ?? 10 }} mm</div>
+                <div class="fact-sub">{{ isset($global['width_cm']) ? measure_format($global['width_cm']) : '—' }} × {{ isset($global['height_cm']) ? measure_format($global['height_cm']) : '—' }} cm</div>
+            </td>
+            <td>
+                <div class="fact-label">Cajones</div>
+                <div class="fact-value">
                     @if($drawersCount >= 1)
-                        <div>
-                            <strong>Cajones:</strong>
-                            {{ $drawersCount }} {{ $drawersCount === 1 ? 'cajón' : 'cajones' }}
-                            @if(filled($configuration['drawer_width_cm'] ?? null) || filled($configuration['drawer_height_cm'] ?? null))
-                                —
-                                {{ isset($configuration['drawer_width_cm']) ? measure_format((float) $configuration['drawer_width_cm']) : '—' }}
-                                × {{ isset($configuration['drawer_height_cm']) ? measure_format((float) $configuration['drawer_height_cm']) : '—' }}
-                                @if(filled($configuration['drawer_depth_cm'] ?? null))
-                                    × {{ measure_format((float) $configuration['drawer_depth_cm']) }}
-                                @endif
-                                cm
+                        {{ $drawersCount }} {{ $drawersCount === 1 ? 'cajón' : 'cajones' }}
+                        @if(filled($configuration['drawer_width_cm'] ?? null) || filled($configuration['drawer_height_cm'] ?? null))
+                            — {{ isset($configuration['drawer_width_cm']) ? measure_format((float) $configuration['drawer_width_cm']) : '—' }}
+                            × {{ isset($configuration['drawer_height_cm']) ? measure_format((float) $configuration['drawer_height_cm']) : '—' }}
+                            @if(filled($configuration['drawer_depth_cm'] ?? null))
+                                × {{ measure_format((float) $configuration['drawer_depth_cm']) }}
                             @endif
-                        </div>
+                            cm
+                        @endif
+                    @else
+                        —
                     @endif
+                </div>
+                <div class="fact-label" style="margin-top:4px;">Barras de colgar</div>
+                <div class="fact-value">
                     @if($hangingBarsCount >= 1)
-                        <div>
-                            <strong>Barras de colgar:</strong>
-                            {{ $hangingBarsCount }} {{ $hangingBarsCount === 1 ? 'barra' : 'barras' }}
-                            @if(filled($hangingBarLengthCm) && (float) $hangingBarLengthCm > 0)
-                                — {{ measure_format((float) $hangingBarLengthCm) }} cm c/u
-                            @endif
-                        </div>
-                    @endif
-                    @if(!empty($interiorLaterals) && is_array($interiorLaterals))
-                        <div>
-                            <strong>Laterales interiores:</strong>
-                            @foreach($interiorLaterals as $lateral)
-                                <div class="lateral-use">{{ $lateral['use'] }}</div>
-                                <div class="lateral-detail">
-                                    Tablero {{ $lateral['board_mm'] }} mm
-                                    — {{ measure_format($lateral['width_cm']) }} × {{ measure_format($lateral['height_cm']) }} cm
-                                </div>
-                            @endforeach
-                        </div>
-                    @elseif((int) ($configuration['interior_laterals_count'] ?? 0) > 0)
-                        <div>
-                            <strong>Laterales interiores:</strong>
-                            {{ (int) $configuration['interior_laterals_count'] }} ud. (tablero {{ $configuration['interior_lateral_board_mm'] ?? 16 }} mm)
-                            @if(!empty($configuration['lateral_interior_depths_cm'][1]))
-                                — alto {{ measure_format($configuration['lateral_interior_depths_cm'][1]) }} cm
-                            @endif
-                        </div>
+                        {{ $hangingBarsCount }} {{ $hangingBarsCount === 1 ? 'barra' : 'barras' }}
+                        @if(filled($hangingBarLengthCm) && (float) $hangingBarLengthCm > 0)
+                            — {{ measure_format((float) $hangingBarLengthCm) }} cm c/u
+                        @endif
+                    @else
+                        —
                     @endif
                 </div>
             </td>

@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\FurniturePresets\Pages;
 use App\Filament\Admin\Resources\FurniturePresets\Concerns\InteractsWithFurniturePresetFormData;
 use App\Filament\Admin\Resources\FurniturePresets\FurniturePresetResource;
 use App\Services\Carpentry\PresetCutSheetPdfGenerator;
+use App\Services\Carpentry\TechnicalSheetPdfGenerator;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -44,6 +45,17 @@ class EditFurniturePreset extends EditRecord
                     $token = $generator->storePreviewFromFormData($this->form->getStateSnapshot());
 
                     return redirect()->away($generator->downloadUrl($token));
+                }),
+            Action::make('previewTechnicalSheet')
+                ->label('Ficha técnica')
+                ->icon('heroicon-o-document-text')
+                ->color('primary')
+                ->action(function (): void {
+                    $generator = app(TechnicalSheetPdfGenerator::class);
+                    $token = $generator->storePreviewFromFormData($this->form->getStateSnapshot());
+                    $url = $generator->previewUrl($token);
+
+                    $this->js('window.open('.json_encode($url).', "_blank")');
                 }),
             DeleteAction::make(),
         ];

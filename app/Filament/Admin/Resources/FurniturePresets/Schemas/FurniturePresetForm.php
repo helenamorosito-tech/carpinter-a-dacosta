@@ -10,9 +10,11 @@ use App\Services\Carpentry\AntFurnitureRemnantMatcher;
 use App\Services\Carpentry\PresetCutCalculator;
 use App\Support\BoardMaterialOptions;
 use App\Support\FurnitureTypeCatalog;
+use App\Support\MachiningOptions;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
@@ -39,14 +41,14 @@ class FurniturePresetForm
         return $schema
             ->components([
                 Wizard::make([
-                    Step::make('Tamaño de Hueco')
+                    Step::make('Medidas')
                         ->schema([
-                            Section::make('Medidas del hueco')
-                                ->collapsible()
-                                ->columns(3)
+                            Section::make('Hueco y mueble')
+                                ->description('De izquierda a derecha: alto, ancho y fondo del hueco, y después los del mueble.')
+                                ->columns(6)
                                 ->schema([
                                     TextInput::make('opening_height_m')
-                                        ->label('Alto del hueco (m)')
+                                        ->label('Hueco alto')
                                         ->numeric()
                                         ->required()
                                         ->default(2.50)
@@ -59,7 +61,7 @@ class FurniturePresetForm
                                             self::syncSuggestedBackBoardQuantity($get, $set);
                                         }),
                                     TextInput::make('opening_width_m')
-                                        ->label('Ancho del hueco (m)')
+                                        ->label('Hueco ancho')
                                         ->numeric()
                                         ->required()
                                         ->default(2.00)
@@ -72,7 +74,7 @@ class FurniturePresetForm
                                             self::syncSuggestedBackBoardQuantity($get, $set);
                                         }),
                                     TextInput::make('opening_depth_cm')
-                                        ->label('Profundidad del hueco (cm)')
+                                        ->label('Hueco fondo')
                                         ->numeric()
                                         ->required()
                                         ->default(60)
@@ -85,16 +87,8 @@ class FurniturePresetForm
                                             $set('global_depth_cm', (float) ($state ?? 60));
                                             self::syncSuggestedBackBoardQuantity($get, $set);
                                         }),
-                                ]),
-                        ]),
-                    Step::make('Medida Global del mueble')
-                        ->schema([
-                            Section::make('Medida Global del mueble')
-                                ->collapsible()
-                                ->columns(3)
-                                ->schema([
                                     TextInput::make('global_height_cm')
-                                        ->label('Alto Global')
+                                        ->label('Mueble alto')
                                         ->numeric()
                                         ->required()
                                         ->default(250)
@@ -107,7 +101,7 @@ class FurniturePresetForm
                                             self::syncSuggestedBackBoardQuantity($get, $set);
                                         }),
                                     TextInput::make('global_width_cm')
-                                        ->label('Ancho Global')
+                                        ->label('Mueble ancho')
                                         ->numeric()
                                         ->required()
                                         ->default(200)
@@ -117,7 +111,7 @@ class FurniturePresetForm
                                         ->live(onBlur: true)
                                         ->afterStateUpdated(fn (Get $get, Set $set) => self::syncSuggestedBackBoardQuantity($get, $set)),
                                     TextInput::make('global_depth_cm')
-                                        ->label('Profundidad Global')
+                                        ->label('Mueble fondo')
                                         ->numeric()
                                         ->required()
                                         ->default(60)
@@ -131,9 +125,8 @@ class FurniturePresetForm
                                             self::syncSuggestedBackBoardQuantity($get, $set);
                                         }),
                                 ]),
-                            Section::make('Tipo de lado')
-                                ->collapsible()
-                                ->columns(2)
+                            Section::make('Cómo apoya')
+                                ->columns(4)
                                 ->schema([
                                     Checkbox::make('_side_paredes')
                                         ->label('Paredes')
@@ -172,15 +165,15 @@ class FurniturePresetForm
                                 ->dehydrated()
                                 ->live(),
                         ]),
-                    Step::make('Tipo de mueble')
+                    Step::make('Cuerpo')
                         ->schema([
                             Section::make('Tipo de mueble')
                                 ->collapsible(false)
                                 ->schema([
                                     CheckboxList::make('furniture_type')
-                                        ->label('Elige el tipo de mueble')
+                                        ->label('Tipo')
                                         ->options(fn (): array => FurnitureTypeCatalog::options())
-                                        ->columns(2)
+                                        ->columns(3)
                                         ->required()
                                         ->live()
                                         ->afterStateHydrated(function (CheckboxList $component, mixed $state): void {
@@ -216,7 +209,7 @@ class FurniturePresetForm
 
                                             return filled($state) ? (string) $state : null;
                                         })
-                                        ->helperText('Marca solo un tipo. Si marcas otro, se desmarca el anterior.'),
+                                        ->helperText('Un solo tipo. Al marcar otro, se queda el último.'),
                                     Actions::make([
                                         Action::make('addFurnitureType')
                                             ->label('Agregar tipo de mueble')
@@ -267,44 +260,11 @@ class FurniturePresetForm
                                             }),
                                     ]),
                                 ]),
-                        ]),
-                    Step::make('Datos del mueble')
-                        ->schema([
-                            self::furnitureTypeBanner(),
-                            Section::make('Paredes')
-                                ->collapsible()
-                                ->visible(fn (Get $get): bool => self::isParedes($get('side_type')))
-                                ->columns(3)
-                                ->schema([
-                                    TextInput::make('configuration.left_side_discount_cm')
-                                        ->label('Descuento lado izquierdo (cm)')
-                                        ->numeric()
-                                        ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
-                                        ->step(0.01)
-                                        ->suffix('cm')
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncAdditionalShelfDefaults($get, $set)),
-                                    TextInput::make('configuration.right_side_discount_cm')
-                                        ->label('Descuento lado derecho (cm)')
-                                        ->numeric()
-                                        ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
-                                        ->step(0.01)
-                                        ->suffix('cm')
-                                        ->live(onBlur: true)
-                                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncAdditionalShelfDefaults($get, $set)),
-                                    TextInput::make('configuration.rear_discount_cm')
-                                        ->label('Descuento trasero (cm)')
-                                        ->numeric()
-                                        ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
-                                        ->step(0.01)
-                                        ->suffix('cm'),
-                                ]),
-                            Section::make('BASE Y ALTURA')
-                                ->collapsible()
-                                ->columns(3)
+                            Section::make('Cuerpo')
+                                ->columns(4)
                                 ->schema([
                                     TextInput::make('configuration.module_count')
-                                        ->label('Número de módulos')
+                                        ->label('Módulos')
                                         ->numeric()
                                         ->default(1)
                                         ->minValue(1)
@@ -312,25 +272,52 @@ class FurniturePresetForm
                                         ->live(onBlur: true)
                                         ->afterStateUpdated(fn (Get $get, Set $set) => self::syncSuggestedBackBoardQuantity($get, $set)),
                                     TextInput::make('configuration.base_discount_cm')
-                                        ->label('Descuento de base (cm)')
+                                        ->label('Desc. base')
                                         ->numeric()
                                         ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
                                         ->step(0.01)
                                         ->suffix('cm'),
                                     TextInput::make('configuration.height_discount_cm')
-                                        ->label('Descuento de altura (cm)')
+                                        ->label('Desc. altura')
                                         ->numeric()
                                         ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
                                         ->step(0.01)
                                         ->suffix('cm'),
+                                    TextInput::make('configuration.rear_discount_cm')
+                                        ->label('Desc. trasero')
+                                        ->numeric()
+                                        ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
+                                        ->step(0.01)
+                                        ->suffix('cm')
+                                        ->visible(fn (Get $get): bool => self::isParedes($get('side_type'))),
+                                ]),
+                            Section::make('Paredes')
+                                ->visible(fn (Get $get): bool => self::isParedes($get('side_type')))
+                                ->columns(4)
+                                ->schema([
+                                    TextInput::make('configuration.left_side_discount_cm')
+                                        ->label('Desc. izquierdo')
+                                        ->numeric()
+                                        ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
+                                        ->step(0.01)
+                                        ->suffix('cm')
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncAdditionalShelfDefaults($get, $set)),
+                                    TextInput::make('configuration.right_side_discount_cm')
+                                        ->label('Desc. derecho')
+                                        ->numeric()
+                                        ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
+                                        ->step(0.01)
+                                        ->suffix('cm')
+                                        ->live(onBlur: true)
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncAdditionalShelfDefaults($get, $set)),
                                 ]),
                             Section::make('Costado visto')
-                                ->collapsible()
                                 ->visible(fn (Get $get): bool => self::isCostadoVisto($get('side_type')))
-                                ->columns(2)
+                                ->columns(4)
                                 ->schema([
                                     Checkbox::make('configuration.costado_visto_izquierda')
-                                        ->label('Costado visto izquierda')
+                                        ->label('Visto izquierda')
                                         ->default(true)
                                         ->live()
                                         ->afterStateUpdated(function (bool $state, Set $set): void {
@@ -343,7 +330,7 @@ class FurniturePresetForm
                                             $set('configuration.costado_visto_derecha', true);
                                         }),
                                     Checkbox::make('configuration.costado_visto_derecha')
-                                        ->label('Costado visto derecha')
+                                        ->label('Visto derecha')
                                         ->default(false)
                                         ->live()
                                         ->afterStateUpdated(function (bool $state, Set $set): void {
@@ -356,58 +343,54 @@ class FurniturePresetForm
                                             $set('configuration.costado_visto_izquierda', true);
                                         }),
                                     TextInput::make('configuration.side_a_discount_cm')
-                                        ->label('Descuento lado A (pared) (cm)')
+                                        ->label('Desc. lado A (pared)')
                                         ->numeric()
                                         ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
                                         ->step(0.01)
                                         ->suffix('cm'),
                                     TextInput::make('configuration.side_b_discount_cm')
-                                        ->label('Descuento lado B (costado visto) (cm)')
+                                        ->label('Desc. lado B (visto)')
                                         ->numeric()
                                         ->default(FurniturePreset::DEFAULT_SIDE_B_DISCOUNT_CM)
                                         ->step(0.01)
                                         ->suffix('cm'),
                                 ]),
                             Section::make('Laterales interiores')
-                                ->collapsible()
                                 ->visible(fn (Get $get): bool => filled($get('furniture_type')))
-                                ->description('Opcional. Agrega uno o más laterales; cada uno se incluye en el plan de corte y en el PDF. Alto por defecto: alto global − 13 cm.')
+                                ->description('Opcional. Alto por defecto: alto global − 13 cm. El corte usa el fondo del mueble.')
                                 ->schema(self::lateralInteriorFields()),
                             Hidden::make('is_active')->default(true),
                         ]),
-                    Step::make('BALDAS')
+                    Step::make('Interior')
                         ->schema([
                             self::furnitureTypeBanner(withTotalShelves: true),
                             Section::make('Balda maletero')
-                                ->collapsible()
                                 ->columns(4)
-                                ->description('Corte en tablero 16 mm. Por defecto: ancho global − 6,5 cm y profundidad global − 9 cm.')
+                                ->description('Arriba del hueco. Por defecto: ancho global − 6,5 cm y fondo global − 9 cm.')
                                 ->schema([
                                     TextInput::make('configuration.trunk_shelf_discount_cm')
-                                        ->label('Descuento balda maletero (cm)')
+                                        ->label('Descuento')
                                         ->numeric()
                                         ->default(FurniturePreset::DEFAULT_DISCOUNT_CM)
                                         ->step(0.01)
                                         ->suffix('cm')
                                         ->visible(fn (Get $get): bool => self::doorCount($get('furniture_type')) === 2),
                                     TextInput::make('configuration.trunk_shelf_length_cm')
-                                        ->label('Ancho de la balda maletero')
+                                        ->label('Ancho')
                                         ->numeric()
                                         ->minValue(0)
                                         ->step(0.01)
                                         ->suffix('cm')
-                                        ->live(onBlur: true)
-                                        ->helperText('Por defecto: ancho global − 6,5 cm.'),
+                                        ->live(onBlur: true),
                                     TextInput::make('configuration.trunk_shelf_depth_cm')
-                                        ->label('Profundidad de la balda maletero')
+                                        ->label('Fondo')
                                         ->numeric()
                                         ->minValue(0)
                                         ->step(0.01)
                                         ->suffix('cm')
-                                        ->live(onBlur: true)
-                                        ->helperText('Por defecto: profundidad global − 9 cm.'),
+                                        ->live(onBlur: true),
                                     Select::make('configuration.trunk_shelf_board_mm')
-                                        ->label('Tablero para balda maletero')
+                                        ->label('Tablero')
                                         ->options([
                                             10 => '10 mm',
                                             16 => '16 mm',
@@ -416,12 +399,10 @@ class FurniturePresetForm
                                         ->default(16)
                                         ->native(false)
                                         ->required()
-                                        ->live()
-                                        ->helperText('Por defecto 16 mm.'),
+                                        ->live(),
                                 ]),
-                            Section::make('Baldas adicionales')
-                                ->collapsible()
-                                ->description('Opcional. Ancho por defecto: ancho global − 13 cm. Profundidad: profundidad global − 9 cm. Cada balda se detalla por separado.')
+                            Section::make('Baldas')
+                                ->description('Cada balda en su fila: ancho, fondo y tablero. Por defecto, ancho global − 13 cm y fondo global − 9 cm.')
                                 ->schema([
                                     Repeater::make('configuration.additional_shelves')
                                         ->label('Listado de baldas adicionales')
@@ -467,8 +448,7 @@ class FurniturePresetForm
                                                     return $width > 0
                                                         ? FurniturePreset::defaultAdditionalShelfWidthCm($width)
                                                         : null;
-                                                })
-                                                ->helperText('Por defecto: ancho global − 13 cm.'),
+                                                }),
                                             TextInput::make('depth_cm')
                                                 ->label('Profundidad')
                                                 ->numeric()
@@ -483,8 +463,7 @@ class FurniturePresetForm
                                                     return $depth > 0
                                                         ? FurniturePreset::defaultAdditionalShelfDepthCm($depth)
                                                         : null;
-                                                })
-                                                ->helperText('Por defecto: profundidad global − 9 cm.'),
+                                                }),
                                             Select::make('board_mm')
                                                 ->label('Tablero')
                                                 ->options([
@@ -514,13 +493,8 @@ class FurniturePresetForm
                             Hidden::make('configuration.shelf_count')
                                 ->default(1)
                                 ->dehydrated(),
-                        ]),
-                    Step::make('Cajones y Barra Colgar')
-                        ->schema([
-                            self::furnitureTypeBanner(),
-                            Section::make('Cajones y Barra Colgar')
-                                ->collapsible()
-                                ->columns(3)
+                            Section::make('Cajones y barra')
+                                ->columns(4)
                                 ->schema([
                                     TextInput::make('configuration.drawers_count')
                                         ->label('Cajones')
@@ -529,17 +503,17 @@ class FurniturePresetForm
                                         ->minValue(0)
                                         ->live(onBlur: true),
                                     TextInput::make('configuration.drawer_width_cm')
-                                        ->label('Medida cajón — ancho (cm)')
+                                        ->label('Ancho cajón')
                                         ->numeric()
                                         ->step(0.01)
                                         ->suffix('cm'),
                                     TextInput::make('configuration.drawer_height_cm')
-                                        ->label('Medida cajón — alto (cm)')
+                                        ->label('Alto cajón')
                                         ->numeric()
                                         ->step(0.01)
                                         ->suffix('cm'),
                                     TextInput::make('configuration.drawer_depth_cm')
-                                        ->label('Medida cajón — profundidad (cm)')
+                                        ->label('Fondo cajón')
                                         ->numeric()
                                         ->step(0.01)
                                         ->suffix('cm')
@@ -549,23 +523,20 @@ class FurniturePresetForm
                                                 ? max(0, (float) $get('global_depth_cm') - FurniturePreset::DEFAULT_SHELF_DEPTH_OFFSET_CM)
                                                 : null)),
                                     TextInput::make('configuration.hanging_bars_count')
-                                        ->label('Número de barras de colgar')
+                                        ->label('Barras de colgar')
                                         ->numeric()
                                         ->default(0)
                                         ->minValue(0)
                                         ->live(onBlur: true),
                                     TextInput::make('configuration.hanging_bar_length_cm')
-                                        ->label('Medida barra de colgar (cm)')
+                                        ->label('Largo barra')
                                         ->numeric()
                                         ->step(0.01)
                                         ->minValue(0.01)
                                         ->suffix('cm')
-                                        ->required(fn (Get $get): bool => (int) ($get('configuration.hanging_bars_count') ?? 0) >= 1)
-                                        ->helperText(fn (Get $get): ?string => (int) ($get('configuration.hanging_bars_count') ?? 0) >= 1
-                                            ? 'Obligatoria si hay al menos 1 barra de colgar.'
-                                            : null),
+                                        ->required(fn (Get $get): bool => (int) ($get('configuration.hanging_bars_count') ?? 0) >= 1),
                                     TextInput::make('configuration.shelf_depth_cm')
-                                        ->label('Profundidad de baldas (cm)')
+                                        ->label('Fondo de baldas')
                                         ->numeric()
                                         ->default(fn (Get $get): float => max(
                                             0,
@@ -577,15 +548,15 @@ class FurniturePresetForm
                                         ->visible(fn (Get $get): bool => ! self::isCorrederas($get('furniture_type'))),
                                 ]),
                         ]),
-                    Step::make('Material y cortes')
+                    Step::make('Tablero')
                         ->schema([
                             self::furnitureTypeBanner(),
-                            Section::make('Tamaño de tablero')
-                                ->collapsible()
-                                ->columns(2)
+                            Section::make('Tablero')
+                                ->description('Hoja de corte, grosor de la caja y fondo. Máximo 122 × 244 cm.')
+                                ->columns(5)
                                 ->schema([
                                     TextInput::make('board_width_cm')
-                                        ->label('Ancho del tablero')
+                                        ->label('Ancho hoja')
                                         ->numeric()
                                         ->required()
                                         ->default(FurniturePreset::DEFAULT_BOARD_WIDTH_CM)
@@ -596,7 +567,7 @@ class FurniturePresetForm
                                         ->live(onBlur: true)
                                         ->afterStateUpdated(fn (Get $get, Set $set) => self::syncSuggestedBackBoardQuantity($get, $set)),
                                     TextInput::make('board_height_cm')
-                                        ->label('Alto del tablero')
+                                        ->label('Alto hoja')
                                         ->numeric()
                                         ->required()
                                         ->default(FurniturePreset::DEFAULT_BOARD_HEIGHT_CM)
@@ -605,14 +576,9 @@ class FurniturePresetForm
                                         ->step(0.01)
                                         ->suffix('cm')
                                         ->live(onBlur: true)
-                                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncSuggestedBackBoardQuantity($get, $set))
-                                        ->helperText('Máximo 122 × 244 cm (1,22 × 2,44 m). Los cortes no pueden superar este tamaño.'),
-                                ]),
-                            Section::make('Listado de tableros')
-                                ->collapsible()
-                                ->schema([
+                                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncSuggestedBackBoardQuantity($get, $set)),
                                     Select::make('structure_board_thickness_mm')
-                                        ->label('Grosor tableros de estructura')
+                                        ->label('Grosor caja')
                                         ->options([
                                             10 => '10 mm',
                                             16 => '16 mm',
@@ -630,16 +596,37 @@ class FurniturePresetForm
                                                 : (filled($current) ? [(string) $current] : []);
                                             $remapped = BoardMaterialOptions::remappedToThickness($keys, $thicknessMm);
                                             $set('selected_boards', $remapped[0] ?? 'blanco_'.$thicknessMm);
-                                        })
-                                        ->helperText('Por defecto 16 mm (editable). Aplica al techo, base y laterales del exterior.'),
+                                        }),
+                                    Select::make('back_board_thickness_mm')
+                                        ->label('Grosor fondo')
+                                        ->options([
+                                            10 => '10 mm',
+                                            16 => '16 mm',
+                                            19 => '19 mm',
+                                        ])
+                                        ->default(FurniturePreset::DEFAULT_BACK_BOARD_THICKNESS_MM)
+                                        ->required()
+                                        ->native(false)
+                                        ->live(),
+                                    TextInput::make('back_board_quantity')
+                                        ->label('Fondos')
+                                        ->numeric()
+                                        ->integer()
+                                        ->minValue(1)
+                                        ->default(FurniturePreset::DEFAULT_BACK_BOARD_QUANTITY)
+                                        ->required()
+                                        ->live(onBlur: true),
+                                ]),
+                            Section::make('Color')
+                                ->schema([
                                     Radio::make('selected_boards')
-                                        ->label('Tipo de material / color')
+                                        ->label('Material')
                                         ->options(fn (Get $get): array => BoardMaterialOptions::optionsForThickness(
                                             (int) ($get('structure_board_thickness_mm') ?? 16),
                                         ))
                                         ->default(BoardMaterialOptions::defaultSelected()[0] ?? 'blanco_16')
                                         ->required()
-                                        ->columns(2)
+                                        ->columns(4)
                                         ->live()
                                         ->afterStateUpdated(function (mixed $state, Set $set): void {
                                             if (! filled($state) || is_array($state)) {
@@ -650,37 +637,51 @@ class FurniturePresetForm
                                                 'structure_board_thickness_mm',
                                                 BoardMaterialOptions::primaryThicknessMm([(string) $state]),
                                             );
-                                        })
-                                        ->helperText(new HtmlString(
-                                            '<span class="text-gray-600 dark:text-gray-300">Solo una opción. Se muestran los materiales del grosor de estructura elegido.</span>'
-                                        )),
+                                        }),
                                 ]),
-                            Section::make('Tableros de fondo del mueble')
-                                ->collapsible()
-                                ->description('Por defecto: 1 fondo en 1 tablero de 10 mm (ancho × alto globales, un solo corte). Editable si hace falta.')
-                                ->columns(2)
+                            Section::make('Mecanizados')
+                                ->description('Herrajes y taladros de la ficha. Si dejas la cantidad vacía, se calcula.')
+                                ->columns(4)
                                 ->schema([
-                                    Select::make('back_board_thickness_mm')
-                                        ->label('Grosor tablero de fondo')
-                                        ->options([
-                                            10 => '10 mm',
-                                            16 => '16 mm',
-                                            19 => '19 mm',
-                                        ])
-                                        ->default(FurniturePreset::DEFAULT_BACK_BOARD_THICKNESS_MM)
-                                        ->required()
-                                        ->native(false)
+                                    CheckboxList::make('configuration.machining')
+                                        ->label('Qué mecanizar')
+                                        ->options(MachiningOptions::options())
+                                        ->default(MachiningOptions::defaults())
+                                        ->columns(4)
                                         ->live()
-                                        ->helperText('Por defecto 10 mm. Editable si se necesita otro grosor.'),
-                                    TextInput::make('back_board_quantity')
-                                        ->label('Cantidad de fondos')
+                                        ->columnSpanFull(),
+                                    TextInput::make('configuration.machining_portabaldas_qty')
+                                        ->label('Portabaldas')
                                         ->numeric()
-                                        ->integer()
-                                        ->minValue(1)
-                                        ->default(FurniturePreset::DEFAULT_BACK_BOARD_QUANTITY)
-                                        ->required()
-                                        ->live(onBlur: true)
-                                        ->helperText('Por defecto 1 fondo por mueble (1 corte en 1 tablero).'),
+                                        ->minValue(0)
+                                        ->placeholder('4 por balda')
+                                        ->visible(fn (Get $get): bool => in_array(
+                                            MachiningOptions::PORTABALDAS,
+                                            (array) $get('configuration.machining'),
+                                            true,
+                                        )),
+                                    TextInput::make('configuration.machining_soporte_lateral_qty')
+                                        ->label('Soportes laterales')
+                                        ->numeric()
+                                        ->minValue(0)
+                                        ->placeholder('Automático')
+                                        ->visible(fn (Get $get): bool => in_array(
+                                            MachiningOptions::SOPORTE_LATERAL,
+                                            (array) $get('configuration.machining'),
+                                            true,
+                                        )),
+                                    TextInput::make('configuration.machining_suplemento_height_cm')
+                                        ->label('Alto suplemento')
+                                        ->numeric()
+                                        ->minValue(0.1)
+                                        ->step(0.1)
+                                        ->suffix('cm')
+                                        ->default(6)
+                                        ->visible(fn (Get $get): bool => in_array(
+                                            MachiningOptions::SUPLEMENTOS,
+                                            (array) $get('configuration.machining'),
+                                            true,
+                                        )),
                                 ]),
                             Section::make('Cálculo de cortes')
                                 ->collapsible()
@@ -723,11 +724,14 @@ class FurniturePresetForm
                                             ];
                                         }),
                                 ]),
-                            Section::make('Plan de corte PDF')
+                            Section::make('Plan de corte y ficha técnica')
                                 ->collapsible()
-                                ->description('Previsualiza o descarga el listado de tableros, piezas, sobrantes y dibujos de cortes. Incluye los mismos sobrantes S-XX mostrados arriba.')
+                                ->description('El plan de corte lista tableros y sobrantes. La ficha técnica lleva el despiece en milímetros, el alzado del mueble a la derecha y la hoja de mecanizados.')
                                 ->schema([
-                                    Actions::make(self::cutSheetPdfActions()),
+                                    Actions::make([
+                                        ...self::cutSheetPdfActions(),
+                                        ...self::technicalSheetPdfActions(),
+                                    ]),
                                 ]),
                         ]),
                 ])
@@ -769,7 +773,7 @@ class FurniturePresetForm
     }
 
     /**
-     * @return array<int, \Filament\Forms\Components\Component>
+     * @return array<int, Component>
      */
     protected static function lateralInteriorFields(): array
     {

@@ -16,52 +16,54 @@ class MaterialForm
     {
         return $schema
             ->components([
-                Section::make('Material en stock')
-                    ->columns(2)
+                Section::make('Tablero en stock')
+                    ->columns(4)
                     ->schema([
                         TextInput::make('name')
                             ->label('Nombre')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->columnSpan(2),
                         Select::make('type')
-                            ->label('Tipo de material')
+                            ->label('Tipo')
                             ->options(MaterialType::class)
                             ->default(MaterialType::Textil)
                             ->required()
                             ->native(false),
+                        Toggle::make('is_active')
+                            ->label('Activo')
+                            ->default(true)
+                            ->inline(false),
                         TextInput::make('width_cm')
-                            ->label('Ancho tablero (cm)')
+                            ->label('Ancho')
                             ->numeric()
                             ->step(0.01)
                             ->required()
                             ->default(122)
                             ->suffix('cm'),
                         TextInput::make('height_cm')
-                            ->label('Alto tablero (cm)')
+                            ->label('Alto')
                             ->numeric()
                             ->step(0.01)
                             ->required()
                             ->default(244)
                             ->suffix('cm'),
                         TextInput::make('thickness_cm')
-                            ->label('Grosor lámina (cm)')
+                            ->label('Grosor')
                             ->numeric()
                             ->step(0.01)
                             ->required()
                             ->default(1.6)
                             ->suffix('cm'),
                         TextInput::make('quantity')
-                            ->label('Cantidad en stock')
+                            ->label('Stock')
                             ->numeric()
                             ->required()
                             ->default(0)
                             ->minValue(0),
-                        Toggle::make('is_active')
-                            ->label('Activo')
-                            ->default(true)
-                            ->columnSpanFull(),
                         Textarea::make('notes')
                             ->label('Notas')
+                            ->rows(2)
                             ->columnSpanFull(),
                     ]),
             ]);

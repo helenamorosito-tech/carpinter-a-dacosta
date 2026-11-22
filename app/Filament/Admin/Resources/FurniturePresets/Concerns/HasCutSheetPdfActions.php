@@ -4,8 +4,10 @@ namespace App\Filament\Admin\Resources\FurniturePresets\Concerns;
 
 use App\Models\FurniturePreset;
 use App\Services\Carpentry\PresetCutSheetPdfGenerator;
+use App\Services\Carpentry\TechnicalSheetPdfGenerator;
 use App\Support\BoardMaterialOptions;
 use App\Support\FurnitureTypeCatalog;
+use App\Support\MachiningOptions;
 use Filament\Actions\Action;
 use Filament\Schemas\Components\Utilities\Get;
 use Livewire\Component;
@@ -44,6 +46,10 @@ trait HasCutSheetPdfActions
                 'drawer_width_cm' => $get('configuration.drawer_width_cm'),
                 'drawer_depth_cm' => $get('configuration.drawer_depth_cm'),
                 'shelf_depth_cm' => $get('configuration.shelf_depth_cm'),
+                'machining' => $get('configuration.machining') ?? MachiningOptions::defaults(),
+                'machining_portabaldas_qty' => $get('configuration.machining_portabaldas_qty'),
+                'machining_soporte_lateral_qty' => $get('configuration.machining_soporte_lateral_qty'),
+                'machining_suplemento_height_cm' => $get('configuration.machining_suplemento_height_cm'),
             ],
             'board_width_cm' => $get('board_width_cm'),
             'board_height_cm' => $get('board_height_cm'),
@@ -90,9 +96,39 @@ trait HasCutSheetPdfActions
             Action::make('downloadCutPdf')
                 ->label('Descargar PDF de cortes')
                 ->icon('heroicon-o-arrow-down-tray')
-                ->color('primary')
+                ->color('gray')
                 ->action(function (Get $get) {
                     $generator = app(PresetCutSheetPdfGenerator::class);
+                    $token = $generator->storePreviewFromFormData(self::cutSheetFormDataFromGet($get));
+
+                    return redirect()->away($generator->downloadUrl($token));
+                }),
+        ];
+    }
+
+    /**
+     * @return array<int, Action>
+     */
+    public static function technicalSheetPdfActions(): array
+    {
+        return [
+            Action::make('previewTechnicalSheet')
+                ->label('Previsualizar ficha técnica')
+                ->icon('heroicon-o-document-text')
+                ->color('primary')
+                ->action(function (Get $get, Component $livewire): void {
+                    $generator = app(TechnicalSheetPdfGenerator::class);
+                    $token = $generator->storePreviewFromFormData(self::cutSheetFormDataFromGet($get));
+                    $url = $generator->previewUrl($token);
+
+                    $livewire->js('window.open('.json_encode($url).', "_blank")');
+                }),
+            Action::make('downloadTechnicalSheet')
+                ->label('Descargar ficha técnica')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('primary')
+                ->action(function (Get $get) {
+                    $generator = app(TechnicalSheetPdfGenerator::class);
                     $token = $generator->storePreviewFromFormData(self::cutSheetFormDataFromGet($get));
 
                     return redirect()->away($generator->downloadUrl($token));

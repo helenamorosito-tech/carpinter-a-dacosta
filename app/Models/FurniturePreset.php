@@ -6,6 +6,7 @@ use App\Enums\PlacementType;
 use App\Services\Carpentry\PresetCutCalculator;
 use App\Support\BoardMaterialOptions;
 use App\Support\FurnitureTypeCatalog;
+use App\Support\MachiningOptions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -137,6 +138,10 @@ class FurniturePreset extends Model
             'costado_visto_izquierda' => true,
             'costado_visto_derecha' => false,
             'lateral_interior_depths_cm' => [],
+            'machining' => MachiningOptions::defaults(),
+            'machining_portabaldas_qty' => null,
+            'machining_soporte_lateral_qty' => null,
+            'machining_suplemento_height_cm' => 6,
         ];
     }
 
