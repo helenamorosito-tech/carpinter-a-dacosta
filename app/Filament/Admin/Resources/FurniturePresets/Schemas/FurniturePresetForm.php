@@ -23,6 +23,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Section;
+use Illuminate\Support\HtmlString;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
@@ -165,8 +166,22 @@ class FurniturePresetForm
                         ]),
                     Step::make('Cuerpo')
                         ->schema([
-                            Section::make('Tipo de mueble')
-                                ->collapsible(false)
+                            Section::make(function (Get $get): HtmlString {
+                                $resolved = FurnitureTypeCatalog::resolve($get('furniture_type'));
+                                $label = $resolved['label'] ?? null;
+                                $title = e('Tipo de mueble');
+
+                                if (! filled($label)) {
+                                    return new HtmlString($title);
+                                }
+
+                                return new HtmlString(
+                                    $title.' <span class="fi-furniture-type-selected">'.e($label).'</span>',
+                                );
+                            })
+                                ->extraAttributes(['class' => 'fi-section-furniture-type'])
+                                ->collapsed()
+                                ->persistCollapsed()
                                 ->schema([
                                     CheckboxList::make('furniture_type')
                                         ->label('Tipo')
@@ -290,6 +305,7 @@ class FurniturePresetForm
                                         ->visible(fn (Get $get): bool => self::isParedes($get('side_type'))),
                                 ]),
                             Section::make('Paredes')
+                                ->collapsed()
                                 ->visible(fn (Get $get): bool => self::isParedes($get('side_type')))
                                 ->columns(4)
                                 ->schema([
@@ -354,6 +370,7 @@ class FurniturePresetForm
                                         ->suffix('cm'),
                                 ]),
                             Section::make('Laterales interiores')
+                                ->collapsed()
                                 ->visible(fn (Get $get): bool => filled($get('furniture_type')))
                                 ->description('Opcional. Alto por defecto: alto global − 13 cm. El corte usa el fondo del mueble.')
                                 ->schema(self::lateralInteriorFields()),

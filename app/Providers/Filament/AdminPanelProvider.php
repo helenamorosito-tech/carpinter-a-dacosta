@@ -165,6 +165,39 @@ class AdminPanelProvider extends PanelProvider
                         .dark .fi-section-machining .fi-section-header-description {
                             color: #c5d7e6 !important;
                         }
+
+                        /* Tipo de mueble: amarillo claro, y ámbar oscuro en modo oscuro */
+                        .fi-section-furniture-type > .fi-section:not(.fi-aside) {
+                            background-color: #fff4cc !important;
+                            --tw-ring-color: rgb(202 160 48 / 0.55) !important;
+                        }
+
+                        .fi-section-furniture-type > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #ead48a !important;
+                        }
+
+                        .fi-section-furniture-type .fi-furniture-type-selected {
+                            margin-inline-start: 0.85rem;
+                            font-weight: 600;
+                            color: #9a6700;
+                        }
+
+                        .dark .fi-section-furniture-type > .fi-section:not(.fi-aside) {
+                            background-color: #3f3414 !important;
+                            --tw-ring-color: rgb(214 176 70 / 0.4) !important;
+                        }
+
+                        .dark .fi-section-furniture-type > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(214 176 70 / 0.35) !important;
+                        }
+
+                        .dark .fi-section-furniture-type .fi-section-header-heading {
+                            color: #fff8e8 !important;
+                        }
+
+                        .dark .fi-section-furniture-type .fi-section-header-heading .fi-furniture-type-selected {
+                            color: #ffe08a !important;
+                        }
                     </style>
                 BLADE),
             )
