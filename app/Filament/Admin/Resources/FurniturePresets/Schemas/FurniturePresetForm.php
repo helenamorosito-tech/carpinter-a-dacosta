@@ -274,6 +274,8 @@ class FurniturePresetForm
                                     ]),
                                 ]),
                             Section::make('Cuerpo')
+                                ->extraAttributes(['class' => 'fi-section-body'])
+                                ->collapsed()
                                 ->columns(4)
                                 ->schema([
                                     TextInput::make('configuration.module_count')
@@ -305,6 +307,7 @@ class FurniturePresetForm
                                         ->visible(fn (Get $get): bool => self::isParedes($get('side_type'))),
                                 ]),
                             Section::make('Paredes')
+                                ->extraAttributes(['class' => 'fi-section-walls'])
                                 ->collapsed()
                                 ->visible(fn (Get $get): bool => self::isParedes($get('side_type')))
                                 ->columns(4)
@@ -379,7 +382,7 @@ class FurniturePresetForm
                     Step::make('Interior')
                         ->schema([
                             self::furnitureTypeBanner(withTotalShelves: true),
-                            Section::make('Balda maletero')
+                            Section::make(fn (): HtmlString => self::shelfCountBadge('Balda maletero', 1, 'trunk'))
                                 ->extraAttributes(['class' => 'fi-section-trunk'])
                                 ->columns(4)
                                 ->collapsed()
@@ -418,7 +421,15 @@ class FurniturePresetForm
                                         ->required()
                                         ->live(),
                                 ]),
-                            Section::make('Baldas')
+                            Section::make(function (Get $get): HtmlString {
+                                $additional = $get('configuration.additional_shelves');
+
+                                return self::shelfCountBadge(
+                                    'Baldas',
+                                    is_array($additional) ? count($additional) : 0,
+                                    'shelves',
+                                );
+                            })
                                 ->extraAttributes(['class' => 'fi-section-shelves'])
                                 ->collapsed()
                                 ->description('Cada balda en su fila: ancho, fondo y tablero. Por defecto, ancho global − 13 cm y fondo global − 9 cm.')
@@ -1101,6 +1112,13 @@ class FurniturePresetForm
                 ? 'furniture-type-banner-shelves-'.self::totalShelvesCount($get)
                 : 'furniture-type-banner')
             ->visible(fn (Get $get): bool => filled(FurnitureTypeCatalog::label($get('furniture_type'))));
+    }
+
+    protected static function shelfCountBadge(string $title, int $count, string $tone): HtmlString
+    {
+        return new HtmlString(
+            e($title).' <span class="fi-shelf-count fi-shelf-count-'.e($tone).'">'.max(0, $count).'</span>',
+        );
     }
 
     protected static function totalShelvesCount(Get $get): int

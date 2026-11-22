@@ -6,15 +6,53 @@ use App\Filament\Admin\Resources\FurniturePresets\Concerns\InteractsWithFurnitur
 use App\Filament\Admin\Resources\FurniturePresets\FurniturePresetResource;
 use App\Services\Carpentry\PresetCutSheetPdfGenerator;
 use App\Services\Carpentry\TechnicalSheetPdfGenerator;
+use App\Support\FurnitureTypeCatalog;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\HtmlString;
 
 class EditFurniturePreset extends EditRecord
 {
     use InteractsWithFurniturePresetFormData;
 
     protected static string $resource = FurniturePresetResource::class;
+
+    public function getTitle(): string|Htmlable
+    {
+        $label = $this->editedFurnitureTypeLabel();
+
+        return filled($label) ? 'Editar: '.$label : 'Editar';
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        $label = $this->editedFurnitureTypeLabel();
+        $title = e('Editar:');
+
+        if (! filled($label)) {
+            return new HtmlString('<span class="fi-edit-heading"><span>'.$title.'</span></span>');
+        }
+
+        $badge = Blade::render(
+            '<x-filament::badge color="orange" tag="span">{{ $label }}</x-filament::badge>',
+            ['label' => $label],
+        );
+
+        return new HtmlString(
+            '<span class="fi-edit-heading"><span>'.$title.'</span>'.$badge.'</span>',
+        );
+    }
+
+    protected function editedFurnitureTypeLabel(): ?string
+    {
+        $state = data_get($this->data, 'furniture_type') ?? $this->getRecord()->furniture_type ?? null;
+        $resolved = FurnitureTypeCatalog::resolve($state);
+
+        return $resolved['label'] ?? null;
+    }
 
     protected function getHeaderActions(): array
     {

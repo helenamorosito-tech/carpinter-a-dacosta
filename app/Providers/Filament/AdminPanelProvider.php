@@ -33,6 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('Carpintería DaCosta')
             ->colors([
                 'primary' => Color::Amber,
+                'orange' => Color::Orange,
             ])
             ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
             ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
@@ -48,6 +49,21 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::STYLES_AFTER,
                 fn (): string => Blade::render(<<<'BLADE'
                     <style>
+                        .fi-edit-heading {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: flex-start;
+                            gap: 0.4rem;
+                        }
+
+                        /* El título largo no se aplasta a una palabra por línea junto a los botones */
+                        @media (min-width: 640px) {
+                            .fi-header > div:first-child {
+                                flex: 1 1 22rem !important;
+                                min-width: min(100%, 22rem) !important;
+                            }
+                        }
+
                         /* Sidebar marrón (carpintería) */
                         .fi-sidebar,
                         .fi-sidebar-header,
@@ -251,6 +267,95 @@ class AdminPanelProvider extends PanelProvider
 
                         .dark .fi-section-shelves .fi-section-header-description {
                             color: #c9e6d1 !important;
+                        }
+
+                        .fi-shelf-count {
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-width: 1.45rem;
+                            height: 1.45rem;
+                            margin-inline-start: 0.55rem;
+                            padding: 0 0.4rem;
+                            border-radius: 999px;
+                            font-size: 0.78rem;
+                            font-weight: 700;
+                            line-height: 1;
+                            vertical-align: 0.05rem;
+                        }
+
+                        .fi-shelf-count-trunk {
+                            background-color: #5f6978;
+                            color: #fff;
+                        }
+
+                        .dark .fi-shelf-count-trunk {
+                            background-color: #d5dbe3;
+                            color: #1c2430;
+                        }
+
+                        .fi-shelf-count-shelves {
+                            background-color: #2f7a46;
+                            color: #fff;
+                        }
+
+                        .dark .fi-shelf-count-shelves {
+                            background-color: #c6efd2;
+                            color: #12321c;
+                        }
+
+                        /* Cuerpo: gris claro, y gris más claro que el fondo en modo oscuro */
+                        .fi-section-body > .fi-section:not(.fi-aside) {
+                            background-color: #e8eaed !important;
+                            --tw-ring-color: rgb(156 163 175 / 0.7) !important;
+                        }
+
+                        .fi-section-body > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #d1d5db !important;
+                        }
+
+                        .dark .fi-section-body > .fi-section:not(.fi-aside) {
+                            background-color: #3a4150 !important;
+                            --tw-ring-color: rgb(186 196 210 / 0.35) !important;
+                        }
+
+                        .dark .fi-section-body > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(186 196 210 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-body .fi-section-header-heading {
+                            color: #f4f6f8 !important;
+                        }
+
+                        .dark .fi-section-body .fi-section-header-description {
+                            color: #d5dbe3 !important;
+                        }
+
+                        /* Paredes: morado claro, y morado oscuro en modo oscuro */
+                        .fi-section-walls > .fi-section:not(.fi-aside) {
+                            background-color: #f0e7fb !important;
+                            --tw-ring-color: rgb(167 139 202 / 0.55) !important;
+                        }
+
+                        .fi-section-walls > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: #d8c4ef !important;
+                        }
+
+                        .dark .fi-section-walls > .fi-section:not(.fi-aside) {
+                            background-color: #342848 !important;
+                            --tw-ring-color: rgb(196 170 224 / 0.38) !important;
+                        }
+
+                        .dark .fi-section-walls > .fi-section.fi-section-has-header:not(.fi-collapsed) > .fi-section-content-ctn {
+                            border-top-color: rgb(196 170 224 / 0.28) !important;
+                        }
+
+                        .dark .fi-section-walls .fi-section-header-heading {
+                            color: #f7f3fc !important;
+                        }
+
+                        .dark .fi-section-walls .fi-section-header-description {
+                            color: #e4d4f5 !important;
                         }
                     </style>
                 BLADE),
