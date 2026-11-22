@@ -2,9 +2,11 @@
 
 namespace App\Filament\Admin\Resources\FurnitureProjects\Pages;
 
+use App\Enums\FurnitureWorkStatus;
 use App\Filament\Admin\Resources\FurnitureProjects\FurnitureProjectResource;
 use App\Services\Carpentry\CutSheetPdfGenerator;
 use App\Services\Carpentry\ProjectCalculationService;
+use App\Support\FilamentUiBadges;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Infolists\Components\TextEntry;
@@ -24,19 +26,50 @@ class ViewFurnitureProject extends ViewRecord
                 Section::make('Datos del mueble')
                     ->columns(3)
                     ->schema([
-                        TextEntry::make('name')->label('Proyecto'),
+                        FilamentUiBadges::nameEntry(
+                            TextEntry::make('name')->label('Nombre del mueble')
+                        ),
                         TextEntry::make('reference')->label('Referencia')->placeholder('—'),
                         TextEntry::make('preset.name')->label('Preset')->placeholder('—'),
-                        TextEntry::make('height_cm')->label('Alto')->suffix(' cm'),
-                        TextEntry::make('width_cm')->label('Ancho')->suffix(' cm'),
+                        FilamentUiBadges::priceEntry(
+                            TextEntry::make('price')
+                                ->label('Precio')
+                                ->money('EUR', locale: 'es')
+                                ->placeholder('—')
+                        ),
+                        TextEntry::make('status')
+                            ->label('Estado')
+                            ->badge()
+                            ->formatStateUsing(fn ($state): string => $state instanceof FurnitureWorkStatus
+                                ? $state->getLabel()
+                                : FurnitureWorkStatus::tryFrom((string) $state)?->getLabel() ?? (string) $state)
+                            ->color(fn ($state): string => match (true) {
+                                $state instanceof FurnitureWorkStatus => $state->getColor() ?? 'gray',
+                                default => FurnitureWorkStatus::tryFrom((string) $state)?->getColor() ?? 'gray',
+                            }),
+                        FilamentUiBadges::heightEntry(
+                            TextEntry::make('height_cm')->label('Alto')->suffix(' cm')
+                        ),
+                        FilamentUiBadges::widthEntry(
+                            TextEntry::make('width_cm')->label('Ancho')->suffix(' cm')
+                        ),
                         TextEntry::make('depth_cm')->label('Fondo')->suffix(' cm'),
                         TextEntry::make('placement_type')->label('Ubicación'),
-                        TextEntry::make('door_type')->label('Tipo de puertas'),
-                        TextEntry::make('effective_width_cm')->label('Ancho efectivo')->suffix(' cm'),
+                        FilamentUiBadges::typeEntry(
+                            TextEntry::make('door_type')->label('Tipo de puertas')
+                        ),
+                        FilamentUiBadges::widthEntry(
+                            TextEntry::make('effective_width_cm')->label('Ancho efectivo')->suffix(' cm')
+                        ),
                         TextEntry::make('shelf_count')->label('Baldas'),
                         TextEntry::make('module_count')->label('Módulos'),
                         TextEntry::make('door_count')->label('Puertas calculadas'),
                         TextEntry::make('material.name')->label('Material')->placeholder('—'),
+                        FilamentUiBadges::updatedEntry(
+                            TextEntry::make('updated_at')
+                                ->label('Actualizado')
+                                ->dateTime('d/m/Y H:i')
+                        ),
                     ]),
                 Section::make('Resultado del corte')
                     ->columns(3)

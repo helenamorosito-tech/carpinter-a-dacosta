@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\FurnitureProjects\Pages;
 
+use App\Enums\FurnitureWorkStatus;
 use App\Filament\Admin\Resources\FurnitureProjects\FurnitureProjectResource;
 use App\Services\Carpentry\ProjectCalculationService;
 use Filament\Facades\Filament;
@@ -16,7 +17,7 @@ class CreateFurnitureProject extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['user_id'] = Filament::auth()->id();
-        $data['status'] = 'draft';
+        $data['status'] ??= FurnitureWorkStatus::EnProyecto->value;
 
         return $data;
     }

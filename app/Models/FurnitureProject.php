@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DoorType;
+use App\Enums\FurnitureWorkStatus;
 use App\Enums\PlacementType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +33,7 @@ class FurnitureProject extends Model
         'cut_plan',
         'svg_diagram',
         'status',
+        'price',
     ];
 
     protected function casts(): array
@@ -49,6 +51,8 @@ class FurnitureProject extends Model
             'effective_width_cm' => 'decimal:2',
             'pieces' => 'array',
             'cut_plan' => 'array',
+            'status' => FurnitureWorkStatus::class,
+            'price' => 'decimal:2',
         ];
     }
 

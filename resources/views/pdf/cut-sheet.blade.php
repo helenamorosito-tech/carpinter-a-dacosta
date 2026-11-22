@@ -42,8 +42,8 @@
             @foreach($pieces as $piece)
                 <tr>
                     <td>{{ $piece['label'] }}</td>
-                    <td>{{ number_format($piece['width_cm'], 2) }}</td>
-                    <td>{{ number_format($piece['height_cm'], 2) }}</td>
+                    <td>{{ measure_format($piece['width_cm']) }}</td>
+                    <td>{{ measure_format($piece['height_cm']) }}</td>
                     <td>{{ $piece['quantity'] }}</td>
                 </tr>
             @endforeach
@@ -54,7 +54,7 @@
         <div class="summary">
             <strong>Tableros necesarios:</strong> {{ $cutPlan['total_boards'] }} |
             <strong>Eficiencia:</strong> {{ $cutPlan['efficiency_percent'] }}% |
-            <strong>Desperdicio:</strong> {{ number_format($cutPlan['waste_area_cm2'], 2) }} cm²
+            <strong>Desperdicio:</strong> {{ measure_format($cutPlan['waste_area_cm2']) }} cm²
         </div>
     @endif
 

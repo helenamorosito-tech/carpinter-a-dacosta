@@ -2,11 +2,14 @@
 
 namespace App\Filament\Admin\Resources\FurnitureProjects\Tables;
 
+use App\Enums\FurnitureWorkStatus;
+use App\Support\FilamentUiBadges;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class FurnitureProjectsTable
@@ -15,43 +18,64 @@ class FurnitureProjectsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->label('Proyecto')
-                    ->searchable()
-                    ->sortable(),
+                FilamentUiBadges::nameColumn(
+                    TextColumn::make('name')
+                        ->label('Nombre del mueble')
+                        ->searchable()
+                        ->sortable()
+                ),
                 TextColumn::make('preset.name')
-                    ->label('Preset')
-                    ->placeholder('—'),
-                TextColumn::make('height_cm')
-                    ->label('Alto')
-                    ->suffix(' cm'),
-                TextColumn::make('width_cm')
-                    ->label('Ancho')
-                    ->suffix(' cm'),
-                TextColumn::make('depth_cm')
-                    ->label('Fondo')
-                    ->suffix(' cm'),
-                TextColumn::make('door_count')
-                    ->label('Puertas')
-                    ->placeholder('—'),
-                TextColumn::make('cut_plan.total_boards')
-                    ->label('Tableros')
-                    ->placeholder('—'),
+                    ->label('Ejemplo / preset')
+                    ->placeholder('—')
+                    ->toggleable(),
+                FilamentUiBadges::priceColumn(
+                    TextColumn::make('price')
+                        ->label('Precio')
+                        ->money('EUR', locale: 'es')
+                        ->placeholder('—')
+                        ->sortable()
+                ),
                 TextColumn::make('status')
                     ->label('Estado')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'calculated' => 'success',
-                        'draft' => 'gray',
-                        default => 'warning',
+                    ->formatStateUsing(fn ($state): string => $state instanceof FurnitureWorkStatus
+                        ? $state->getLabel()
+                        : FurnitureWorkStatus::tryFrom((string) $state)?->getLabel() ?? (string) $state)
+                    ->color(fn ($state): string => match (true) {
+                        $state instanceof FurnitureWorkStatus => $state->getColor() ?? 'gray',
+                        default => FurnitureWorkStatus::tryFrom((string) $state)?->getColor() ?? 'gray',
                     }),
-                TextColumn::make('created_at')
-                    ->label('Creado')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable(),
+                FilamentUiBadges::heightColumn(
+                    TextColumn::make('height_cm')
+                        ->label('Alto')
+                        ->suffix(' cm')
+                        ->toggleable()
+                ),
+                FilamentUiBadges::widthColumn(
+                    TextColumn::make('width_cm')
+                        ->label('Ancho')
+                        ->suffix(' cm')
+                        ->toggleable()
+                ),
+                TextColumn::make('depth_cm')
+                    ->label('Fondo')
+                    ->suffix(' cm')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                FilamentUiBadges::updatedColumn(
+                    TextColumn::make('updated_at')
+                        ->label('Actualizado')
+                        ->dateTime('d/m/Y H:i')
+                        ->sortable()
+                ),
             ])
-            ->defaultSort('created_at', 'desc')
-            ->filters([])
+            ->defaultSort('updated_at', 'desc')
+            ->filters([
+                SelectFilter::make('status')
+                    ->label('Estado')
+                    ->options(collect(FurnitureWorkStatus::cases())->mapWithKeys(
+                        fn (FurnitureWorkStatus $status): array => [$status->value => $status->getLabel()],
+                    )->all()),
+            ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),

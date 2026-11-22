@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Materials\Tables;
 
+use App\Support\FilamentUiBadges;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -15,22 +16,29 @@ class MaterialsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nombre')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('type')
-                    ->label('Tipo')
-                    ->badge()
-                    ->sortable(),
-                TextColumn::make('width_cm')
-                    ->label('Ancho')
-                    ->suffix(' cm')
-                    ->sortable(),
-                TextColumn::make('height_cm')
-                    ->label('Alto')
-                    ->suffix(' cm')
-                    ->sortable(),
+                FilamentUiBadges::nameColumn(
+                    TextColumn::make('name')
+                        ->label('Nombre')
+                        ->searchable()
+                        ->sortable()
+                ),
+                FilamentUiBadges::typeColumn(
+                    TextColumn::make('type')
+                        ->label('Tipo')
+                        ->sortable()
+                ),
+                FilamentUiBadges::widthColumn(
+                    TextColumn::make('width_cm')
+                        ->label('Ancho')
+                        ->suffix(' cm')
+                        ->sortable()
+                ),
+                FilamentUiBadges::heightColumn(
+                    TextColumn::make('height_cm')
+                        ->label('Alto')
+                        ->suffix(' cm')
+                        ->sortable()
+                ),
                 TextColumn::make('thickness_cm')
                     ->label('Grosor')
                     ->suffix(' cm')
@@ -41,6 +49,13 @@ class MaterialsTable
                 IconColumn::make('is_active')
                     ->label('Activo')
                     ->boolean(),
+                FilamentUiBadges::updatedColumn(
+                    TextColumn::make('updated_at')
+                        ->label('Actualizado')
+                        ->dateTime('d/m/Y H:i')
+                        ->sortable()
+                        ->toggleable(isToggledHiddenByDefault: true)
+                ),
             ])
             ->filters([])
             ->recordActions([

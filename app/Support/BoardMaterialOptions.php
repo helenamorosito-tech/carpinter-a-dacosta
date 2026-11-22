@@ -30,13 +30,67 @@ class BoardMaterialOptions
     }
 
     /**
+     * Material options limited to a single board thickness (for structure listing).
+     *
      * @return array<string, string>
+     */
+    public static function optionsForThickness(int $thicknessMm): array
+    {
+        $thickness = BoardThickness::tryFrom($thicknessMm) ?? BoardThickness::Mm16;
+        $options = [];
+
+        foreach (BoardColor::cases() as $color) {
+            $key = self::optionKey($color, $thickness);
+            $options[$key] = sprintf('%s — %s', $color->getLabel(), $thickness->getLabel());
+        }
+
+        return $options;
+    }
+
+    /**
+     * Keep selected colors, rewriting keys to the given thickness.
+     *
+     * @param  list<string>|null  $keys
+     * @return list<string>
+     */
+    public static function remappedToThickness(?array $keys, int $thicknessMm): array
+    {
+        $thickness = BoardThickness::tryFrom($thicknessMm) ?? BoardThickness::Mm16;
+        $remapped = [];
+
+        foreach ($keys ?? [] as $key) {
+            $item = self::parse((string) $key);
+
+            if ($item) {
+                $remapped[] = self::optionKey($item['color'], $thickness);
+            }
+        }
+
+        if ($remapped === []) {
+            return [self::optionKey(BoardColor::Blanco, $thickness)];
+        }
+
+        return array_values(array_unique($remapped));
+    }
+
+    /**
+     * @return list<string>
      */
     public static function defaultSelected(): array
     {
         return [
             self::optionKey(BoardColor::Blanco, BoardThickness::Mm16),
         ];
+    }
+
+    /**
+     * Thickness in mm from the first selected board (preferring 16 mm if present).
+     *
+     * @param  list<string>|null  $keys
+     */
+    public static function primaryThicknessMm(?array $keys): int
+    {
+        return (int) round(self::primaryThicknessCm($keys) * 10);
     }
 
     public static function parse(string $key): ?array

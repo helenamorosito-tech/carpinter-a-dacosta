@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\FurnitureProjects\Schemas;
 
 use App\Enums\DoorType;
+use App\Enums\FurnitureWorkStatus;
 use App\Enums\PlacementType;
 use App\Models\FurniturePreset;
 use App\Models\Material;
@@ -32,6 +33,20 @@ class FurnitureProjectForm
                                 TextInput::make('reference')
                                     ->label('Referencia')
                                     ->maxLength(255),
+                                TextInput::make('price')
+                                    ->label('Precio')
+                                    ->numeric()
+                                    ->prefix('€')
+                                    ->step(0.01)
+                                    ->minValue(0),
+                                Select::make('status')
+                                    ->label('Estado')
+                                    ->options(collect(FurnitureWorkStatus::cases())->mapWithKeys(
+                                        fn (FurnitureWorkStatus $status): array => [$status->value => $status->getLabel()],
+                                    )->all())
+                                    ->default(FurnitureWorkStatus::EnProyecto->value)
+                                    ->required()
+                                    ->native(false),
                                 Select::make('furniture_preset_id')
                                     ->label('Tipo de mueble (preset)')
                                     ->options(fn () => FurniturePreset::query()->where('is_active', true)->pluck('name', 'id'))
@@ -54,16 +69,19 @@ class FurnitureProjectForm
                                 TextInput::make('height_cm')
                                     ->label('Alto (cm)')
                                     ->numeric()
+                                    ->step(0.01)
                                     ->required()
                                     ->minValue(1),
                                 TextInput::make('width_cm')
                                     ->label('Ancho (cm)')
                                     ->numeric()
+                                    ->step(0.01)
                                     ->required()
                                     ->minValue(1),
                                 TextInput::make('depth_cm')
                                     ->label('Fondo (cm)')
                                     ->numeric()
+                                    ->step(0.01)
                                     ->required()
                                     ->minValue(1),
                             ])->columns(2),
@@ -93,6 +111,7 @@ class FurnitureProjectForm
                                 TextInput::make('shelf_thickness_cm')
                                     ->label('Grosor de lámina (cm)')
                                     ->numeric()
+                                    ->step(0.01)
                                     ->default(1.6)
                                     ->helperText('Se descuenta del largo de las baldas (2 × grosor).'),
                                 TextInput::make('module_count')

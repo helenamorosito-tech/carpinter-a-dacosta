@@ -32,18 +32,21 @@ class MaterialForm
                         TextInput::make('width_cm')
                             ->label('Ancho tablero (cm)')
                             ->numeric()
+                            ->step(0.01)
                             ->required()
                             ->default(122)
                             ->suffix('cm'),
                         TextInput::make('height_cm')
                             ->label('Alto tablero (cm)')
                             ->numeric()
+                            ->step(0.01)
                             ->required()
                             ->default(244)
                             ->suffix('cm'),
                         TextInput::make('thickness_cm')
                             ->label('Grosor lámina (cm)')
                             ->numeric()
+                            ->step(0.01)
                             ->required()
                             ->default(1.6)
                             ->suffix('cm'),

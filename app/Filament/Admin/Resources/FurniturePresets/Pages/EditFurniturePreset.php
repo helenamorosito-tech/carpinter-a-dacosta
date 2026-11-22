@@ -8,7 +8,6 @@ use App\Services\Carpentry\PresetCutSheetPdfGenerator;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Support\HtmlString;
 
 class EditFurniturePreset extends EditRecord
 {
@@ -19,38 +18,45 @@ class EditFurniturePreset extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('saveHeader')
+                ->label('Guardar cambios')
+                ->icon('heroicon-o-check')
+                ->color('primary')
+                ->action('save')
+                ->keyBindings(['mod+s']),
             Action::make('previewCutPdf')
                 ->label('Previsualizar PDF')
                 ->icon('heroicon-o-eye')
                 ->color('gray')
-                ->modalHeading('Previsualización del plan de corte')
-                ->modalWidth('7xl')
-                ->modalContent(function (): HtmlString {
-                    $pdf = app(PresetCutSheetPdfGenerator::class)
-                        ->generateFromFormData($this->form->getStateSnapshot());
+                ->action(function (): void {
+                    $generator = app(PresetCutSheetPdfGenerator::class);
+                    $token = $generator->storePreviewFromFormData($this->form->getStateSnapshot());
+                    $url = $generator->previewUrl($token);
 
-                    return new HtmlString(
-                        view('filament.presets.pdf-preview', [
-                            'base64' => base64_encode($pdf->output()),
-                        ])->render()
-                    );
-                })
-                ->modalSubmitAction(false)
-                ->modalCancelActionLabel('Cerrar'),
+                    $this->js('window.open('.json_encode($url).', "_blank")');
+                }),
             Action::make('downloadCutPdf')
                 ->label('Descargar PDF de cortes')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
                 ->action(function () {
-                    $pdf = app(PresetCutSheetPdfGenerator::class)
-                        ->generateFromFormData($this->form->getStateSnapshot());
+                    $generator = app(PresetCutSheetPdfGenerator::class);
+                    $token = $generator->storePreviewFromFormData($this->form->getStateSnapshot());
 
-                    return response()->streamDownload(
-                        fn () => print ($pdf->output()),
-                        'plan-corte-'.($this->record->slug ?? 'mueble').'.pdf',
-                    );
+                    return redirect()->away($generator->downloadUrl($token));
                 }),
             DeleteAction::make(),
         ];
+    }
+
+    protected function getSaveFormAction(): Action
+    {
+        return parent::getSaveFormAction()
+            ->label('Guardar cambios');
+    }
+
+    protected function getRedirectUrl(): ?string
+    {
+        return $this->getResourceUrl('index');
     }
 }

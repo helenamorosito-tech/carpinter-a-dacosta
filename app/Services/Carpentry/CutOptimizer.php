@@ -103,17 +103,17 @@ class CutOptimizer
         }
 
         $normalizedBoards = array_map(function (array $board): array {
-            $remnants = array_values(array_filter(
-                $board['free_rects'],
-                fn (array $rect): bool => $rect['width'] >= 5 && $rect['height'] >= 5,
-            ));
-
             return [
                 'index' => $board['index'],
                 'width_cm' => $board['width_cm'],
                 'height_cm' => $board['height_cm'],
                 'placements' => $board['placements'],
-                'remnants' => $remnants,
+                // Rectángulos disjuntos (no free-rects solapados del packing).
+                'remnants' => $this->computeNonOverlappingRemnants(
+                    (float) $board['width_cm'],
+                    (float) $board['height_cm'],
+                    $board['placements'] ?? [],
+                ),
             ];
         }, $boards);
 
@@ -136,6 +136,212 @@ class CutOptimizer
             'waste_area_cm2' => round(max(0, $totalBoardArea - $usedArea), 2),
             'efficiency_percent' => $totalBoardArea > 0 ? round(($usedArea / $totalBoardArea) * 100, 2) : 0,
         ];
+    }
+
+    /**
+     * Sobrantes como rectángulos disjuntos a partir de las piezas colocadas.
+     * Evita el free-rect solapado del packing (MaxRects), que dibuja un solo
+     * contorno punteado con varias etiquetas S-0N dentro.
+     *
+     * @param  list<array{x?: float, y?: float, width?: float, height?: float}>  $placements
+     * @return list<array{x: float, y: float, width: float, height: float}>
+     */
+    private function computeNonOverlappingRemnants(float $boardWidthCm, float $boardHeightCm, array $placements): array
+    {
+        $free = [[
+            'x' => 0.0,
+            'y' => 0.0,
+            'width' => $boardWidthCm,
+            'height' => $boardHeightCm,
+        ]];
+
+        foreach ($placements as $placement) {
+            $free = $this->subtractRectangle(
+                $free,
+                (float) ($placement['x'] ?? 0),
+                (float) ($placement['y'] ?? 0),
+                (float) ($placement['width'] ?? 0),
+                (float) ($placement['height'] ?? 0),
+            );
+        }
+
+        $free = $this->mergeAdjacentRects($free);
+
+        return array_values(array_filter(
+            $free,
+            fn (array $rect): bool => $rect['width'] >= 15 && $rect['height'] >= 15,
+        ));
+    }
+
+    /**
+     * Diferencia de rectángulos sin solapes (hasta 4 trozos por rectángulo libre).
+     *
+     * @param  list<array{x: float, y: float, width: float, height: float}>  $rects
+     * @return list<array{x: float, y: float, width: float, height: float}>
+     */
+    private function subtractRectangle(array $rects, float $x, float $y, float $width, float $height): array
+    {
+        if ($width <= 0 || $height <= 0) {
+            return $rects;
+        }
+
+        $result = [];
+        $x2 = $x + $width;
+        $y2 = $y + $height;
+
+        foreach ($rects as $rect) {
+            if (! $this->rectanglesOverlap($rect, $x, $y, $width, $height)) {
+                $result[] = $rect;
+
+                continue;
+            }
+
+            $rx = (float) $rect['x'];
+            $ry = (float) $rect['y'];
+            $rx2 = $rx + (float) $rect['width'];
+            $ry2 = $ry + (float) $rect['height'];
+
+            // Izquierda (franja completa en Y del libre).
+            if ($x > $rx + 0.05) {
+                $result[] = [
+                    'x' => $rx,
+                    'y' => $ry,
+                    'width' => $x - $rx,
+                    'height' => $ry2 - $ry,
+                ];
+            }
+
+            // Derecha.
+            if ($x2 < $rx2 - 0.05) {
+                $result[] = [
+                    'x' => $x2,
+                    'y' => $ry,
+                    'width' => $rx2 - $x2,
+                    'height' => $ry2 - $ry,
+                ];
+            }
+
+            $overlapLeft = max($rx, $x);
+            $overlapRight = min($rx2, $x2);
+            $overlapWidth = $overlapRight - $overlapLeft;
+
+            if ($overlapWidth > 0.05) {
+                // Abajo (solo en la franja horizontal solapada).
+                if ($y > $ry + 0.05) {
+                    $result[] = [
+                        'x' => $overlapLeft,
+                        'y' => $ry,
+                        'width' => $overlapWidth,
+                        'height' => $y - $ry,
+                    ];
+                }
+
+                // Arriba.
+                if ($y2 < $ry2 - 0.05) {
+                    $result[] = [
+                        'x' => $overlapLeft,
+                        'y' => $y2,
+                        'width' => $overlapWidth,
+                        'height' => $ry2 - $y2,
+                    ];
+                }
+            }
+        }
+
+        return array_values(array_filter(
+            $result,
+            fn (array $rect): bool => $rect['width'] > 0.1 && $rect['height'] > 0.1,
+        ));
+    }
+
+    /**
+     * Une rectángulos adyacentes que forman uno solo.
+     *
+     * @param  list<array{x: float, y: float, width: float, height: float}>  $rects
+     * @return list<array{x: float, y: float, width: float, height: float}>
+     */
+    private function mergeAdjacentRects(array $rects): array
+    {
+        $rects = array_map(
+            fn (array $rect): array => [
+                'x' => round((float) $rect['x'], 2),
+                'y' => round((float) $rect['y'], 2),
+                'width' => round((float) $rect['width'], 2),
+                'height' => round((float) $rect['height'], 2),
+            ],
+            $rects,
+        );
+
+        $merged = true;
+        while ($merged) {
+            $merged = false;
+            $count = count($rects);
+
+            for ($i = 0; $i < $count; $i++) {
+                for ($j = $i + 1; $j < $count; $j++) {
+                    $a = $rects[$i];
+                    $b = $rects[$j];
+
+                    // Misma columna vertical.
+                    if (abs($a['x'] - $b['x']) < 0.05 && abs($a['width'] - $b['width']) < 0.05) {
+                        if (abs(($a['y'] + $a['height']) - $b['y']) < 0.05) {
+                            $rects[$i] = [
+                                'x' => $a['x'],
+                                'y' => $a['y'],
+                                'width' => $a['width'],
+                                'height' => round($a['height'] + $b['height'], 2),
+                            ];
+                            array_splice($rects, $j, 1);
+                            $merged = true;
+                            break 2;
+                        }
+
+                        if (abs(($b['y'] + $b['height']) - $a['y']) < 0.05) {
+                            $rects[$i] = [
+                                'x' => $b['x'],
+                                'y' => $b['y'],
+                                'width' => $b['width'],
+                                'height' => round($b['height'] + $a['height'], 2),
+                            ];
+                            array_splice($rects, $j, 1);
+                            $merged = true;
+                            break 2;
+                        }
+                    }
+
+                    // Misma fila horizontal.
+                    if (abs($a['y'] - $b['y']) < 0.05 && abs($a['height'] - $b['height']) < 0.05) {
+                        if (abs(($a['x'] + $a['width']) - $b['x']) < 0.05) {
+                            $rects[$i] = [
+                                'x' => $a['x'],
+                                'y' => $a['y'],
+                                'width' => round($a['width'] + $b['width'], 2),
+                                'height' => $a['height'],
+                            ];
+                            array_splice($rects, $j, 1);
+                            $merged = true;
+                            break 2;
+                        }
+
+                        if (abs(($b['x'] + $b['width']) - $a['x']) < 0.05) {
+                            $rects[$i] = [
+                                'x' => $b['x'],
+                                'y' => $b['y'],
+                                'width' => round($b['width'] + $a['width'], 2),
+                                'height' => $b['height'],
+                            ];
+                            array_splice($rects, $j, 1);
+                            $merged = true;
+                            break 2;
+                        }
+                    }
+                }
+            }
+        }
+
+        usort($rects, fn (array $a, array $b): int => ($a['y'] <=> $b['y']) ?: ($a['x'] <=> $b['x']));
+
+        return array_values($rects);
     }
 
     /**

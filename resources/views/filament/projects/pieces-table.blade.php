@@ -16,8 +16,8 @@
             @forelse($pieces as $piece)
                 <tr class="border-b border-gray-100 dark:border-gray-800">
                     <td class="px-4 py-2">{{ $piece['label'] }}</td>
-                    <td class="px-4 py-2">{{ number_format($piece['width_cm'], 2) }}</td>
-                    <td class="px-4 py-2">{{ number_format($piece['height_cm'], 2) }}</td>
+                    <td class="px-4 py-2">{{ measure_format($piece['width_cm']) }}</td>
+                    <td class="px-4 py-2">{{ measure_format($piece['height_cm']) }}</td>
                     <td class="px-4 py-2">{{ $piece['quantity'] }}</td>
                 </tr>
             @empty

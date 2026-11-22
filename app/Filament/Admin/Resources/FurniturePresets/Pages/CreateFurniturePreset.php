@@ -7,7 +7,6 @@ use App\Filament\Admin\Resources\FurniturePresets\FurniturePresetResource;
 use App\Services\Carpentry\PresetCutSheetPdfGenerator;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\HtmlString;
 
 class CreateFurniturePreset extends CreateRecord
 {
@@ -28,37 +27,38 @@ class CreateFurniturePreset extends CreateRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('createHeader')
+                ->label('Crear mueble')
+                ->icon('heroicon-o-check')
+                ->color('primary')
+                ->action('create')
+                ->keyBindings(['mod+s']),
             Action::make('previewCutPdf')
                 ->label('Previsualizar PDF')
                 ->icon('heroicon-o-eye')
                 ->color('gray')
-                ->modalHeading('Previsualización del plan de corte')
-                ->modalWidth('7xl')
-                ->modalContent(function (): HtmlString {
-                    $pdf = app(PresetCutSheetPdfGenerator::class)
-                        ->generateFromFormData($this->form->getStateSnapshot());
+                ->action(function (): void {
+                    $generator = app(PresetCutSheetPdfGenerator::class);
+                    $token = $generator->storePreviewFromFormData($this->form->getStateSnapshot());
+                    $url = $generator->previewUrl($token);
 
-                    return new HtmlString(
-                        view('filament.presets.pdf-preview', [
-                            'base64' => base64_encode($pdf->output()),
-                        ])->render()
-                    );
-                })
-                ->modalSubmitAction(false)
-                ->modalCancelActionLabel('Cerrar'),
+                    $this->js('window.open('.json_encode($url).', "_blank")');
+                }),
             Action::make('downloadCutPdf')
                 ->label('Descargar PDF de cortes')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
                 ->action(function () {
-                    $pdf = app(PresetCutSheetPdfGenerator::class)
-                        ->generateFromFormData($this->form->getStateSnapshot());
+                    $generator = app(PresetCutSheetPdfGenerator::class);
+                    $token = $generator->storePreviewFromFormData($this->form->getStateSnapshot());
 
-                    return response()->streamDownload(
-                        fn () => print ($pdf->output()),
-                        'plan-corte-mueble-'.now()->format('Ymd-His').'.pdf',
-                    );
+                    return redirect()->away($generator->downloadUrl($token));
                 }),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResourceUrl('index');
     }
 }

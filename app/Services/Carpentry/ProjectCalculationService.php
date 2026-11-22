@@ -45,7 +45,6 @@ class ProjectCalculationService
             'pieces' => $furnitureResult['pieces'],
             'cut_plan' => $cutPlan,
             'svg_diagram' => $svg,
-            'status' => 'calculated',
         ]);
 
         return $project->fresh();
