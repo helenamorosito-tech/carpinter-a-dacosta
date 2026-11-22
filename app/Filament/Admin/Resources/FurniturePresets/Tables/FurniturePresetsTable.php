@@ -22,6 +22,7 @@ class FurniturePresetsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->reorderableColumns()
             ->columns([
                 FilamentUiBadges::nameColumn(
                     TextColumn::make('name')

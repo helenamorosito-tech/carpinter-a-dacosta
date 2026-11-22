@@ -175,10 +175,22 @@
         table.sheet-split { width: 100%; border-collapse: collapse; margin-top: 2px; }
         table.sheet-split td { vertical-align: top; }
         td.sheet-main { width: 62%; padding-right: 8px; }
-        td.sheet-draw { width: 38%; text-align: center; padding-left: 4px; }
+        td.sheet-draw { width: 38%; text-align: center; vertical-align: middle; padding-left: 4px; }
         td.sheet-main table.boards-list { width: 100%; }
-        .sheet-draw .caption { display: block; font-size: 8px; font-weight: bold; margin: 2px 0 8px; }
-        .sheet-draw img { width: 62mm; height: auto; }
+        .sheet-draw .caption { display: block; font-size: 8px; font-weight: bold; margin: 0 0 4px; }
+        .sheet-draw img { width: 58mm; max-height: 108mm; height: auto; }
+        table.boards-list.page-fit th,
+        table.boards-list.page-fit td {
+            padding: 1px 3px;
+            font-size: 7.5px;
+            line-height: 1.1;
+        }
+        table.boards-list.page-fit-dense th,
+        table.boards-list.page-fit-dense td {
+            padding: 0 2px;
+            font-size: 7px;
+            line-height: 1.05;
+        }
         table.boards-list { margin-top: 4px; table-layout: fixed; }
         table.boards-list th, table.boards-list td {
             padding: 2px 3px;
@@ -497,21 +509,24 @@
         </tr>
     </table>
 
+    @php
+        $materialRowCount = count($materialUsageRows ?? []);
+        $materialTableClass = 'data boards-list page-fit'.($materialRowCount > 16 ? ' page-fit-dense' : '');
+    @endphp
     <table class="sheet-split">
         <tr>
             <td class="sheet-main">
-    <h2>2. Materiales seleccionados</h2>
+    <h2 class="tight">2. Materiales seleccionados</h2>
     @if(count($materials))
-        <p style="margin:0 0 6px;"><strong>Material:</strong> {{ implode(' · ', $materials) }}</p>
+        <p style="margin:0 0 3px;font-size:8px;"><strong>Material:</strong> {{ implode(' · ', $materials) }}</p>
     @endif
     @if(!empty($antRemnantMatches ?? []))
-        <p style="margin:0 0 6px;color:#9a3412;font-weight:bold;font-size:9px;">
+        <p style="margin:0 0 3px;color:#9a3412;font-weight:bold;font-size:8px;">
             Prioridad almacén (ID S-XX): piezas del listado Sobrantes Muebles Ant.
-            Cada fila indica si es «Pieza registrada» o «Sobrante de mueble (sistema)».
         </p>
     @endif
 
-    <table class="data boards-list">
+    <table class="{{ $materialTableClass }}">
         <thead>
             <tr>
                 <th class="col-n">#</th>
@@ -544,6 +559,16 @@
             @endforelse
         </tbody>
     </table>
+            </td>
+            <td class="sheet-draw">
+                @if(!empty($elevation))
+                    <div class="caption">ALZADO DEL MUEBLE</div>
+                    <img src="{{ $elevation }}" alt="Alzado del mueble">
+                @endif
+            </td>
+        </tr>
+    </table>
+
     <h2 class="tight">3. Listado de tableros a usar</h2>
     <table class="data boards-list one-line">
         <thead>
@@ -586,15 +611,6 @@
         | Usada {{ measure_format($totals['used_area_cm2']) }} cm²
         | Desp. {{ measure_format($totals['waste_area_cm2']) }} cm²
     </div>
-            </td>
-            <td class="sheet-draw">
-                @if(!empty($elevation))
-                    <div class="caption">ALZADO DEL MUEBLE</div>
-                    <img src="{{ $elevation }}" alt="Alzado del mueble">
-                @endif
-            </td>
-        </tr>
-    </table>
 
     @if(!empty($machiningImage))
         <div class="page-break">
